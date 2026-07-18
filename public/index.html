@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="An independent weekly tracker comparing observed AI progress with the AI 2027 scenario." />
+  <meta property="og:title" content="AI 2027 Signal" />
+  <meta property="og:description" content="Are we still on the AI 2027 path? An evidence-led weekly tracker." />
+  <title>AI 2027 Signal — Prediction vs. reality</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <div class="noise"></div>
+  <header class="nav shell">
+    <a class="brand" href="#top"><span class="brand-mark">27</span><span>AI 2027 Signal</span></a>
+    <nav><a href="#timeline">Timeline</a><a href="#evidence">Evidence</a><a href="#method">Method</a></nav>
+    <a class="source-link" href="https://ai-2027.com/" target="_blank" rel="noreferrer">Read the scenario ↗</a>
+  </header>
+
+  <main id="top">
+    <section class="hero shell">
+      <div class="eyebrow"><span class="pulse"></span> Updated weekly · independent tracker</div>
+      <h1>Are we still on the<br><em>AI 2027</em> path?</h1>
+      <p class="lede">A legible, evidence-led comparison between one influential AI scenario and the world as it unfolds.</p>
+      <div class="hero-grid">
+        <div class="score-card">
+          <div class="score-head"><span>Scenario alignment</span><span id="confidence"></span></div>
+          <div class="score-row"><span id="score">—</span><span class="score-denom">/100</span><span id="verdict" class="pill">Loading</span></div>
+          <div class="meter"><i id="meter"></i><b class="scenario-tick" title="Scenario pace"></b></div>
+          <p id="score-note">Loading the latest weekly assessment…</p>
+        </div>
+        <div class="now-card">
+          <span class="label">This week</span>
+          <h2 id="week-title"></h2>
+          <div class="model-callout"><span id="model"></span><p id="model-note"></p></div>
+          <span id="updated" class="date"></span>
+        </div>
+      </div>
+    </section>
+
+    <section id="timeline" class="section shell">
+      <div class="section-title"><span>01 / Position</span><h2>Prediction vs. reality</h2><p>The horizontal gap is the story. Scores express editorial alignment, not probability.</p></div>
+      <div class="timeline-card">
+        <div class="time-axis"><span>2025</span><span>2026</span><span>2027</span><span>2028</span></div>
+        <div class="timeline-line"><i class="now-line"></i></div>
+        <div class="marker scenario-marker"><span>Scenario</span><b id="scenario-marker"></b><small id="scenario-date"></small></div>
+        <div class="marker reality-marker"><span>Observed</span><b id="reality-marker"></b><small>as of latest update</small></div>
+      </div>
+      <div id="tracks" class="tracks"></div>
+    </section>
+
+    <section id="evidence" class="section evidence-wrap">
+      <div class="shell">
+        <div class="section-title light"><span>02 / Evidence log</span><h2>What moved the signal?</h2><p>Short weekly judgments, linked to the evidence behind them.</p></div>
+        <div id="updates" class="updates"></div>
+      </div>
+    </section>
+
+    <section id="method" class="section shell method">
+      <div class="section-title"><span>03 / Method</span><h2>Transparent by design</h2></div>
+      <div class="method-grid">
+        <article><span>01</span><h3>Start with claims</h3><p>Translate the scenario into dated, falsifiable milestones instead of scoring its mood.</p></article>
+        <article><span>02</span><h3>Prefer primary evidence</h3><p>Model cards, evaluations, company disclosures, and research precede commentary.</p></article>
+        <article><span>03</span><h3>Separate capability from impact</h3><p>A benchmark jump does not automatically prove reliable automation or economic deployment.</p></article>
+        <article><span>04</span><h3>Keep uncertainty visible</h3><p>Private lab progress and weak measurements make false precision especially dangerous.</p></article>
+      </div>
+      <p class="disclaimer">AI 2027 Signal is an independent editorial project and is not affiliated with the AI Futures Project. The scenario is a forecast, not a promise; the score is a structured judgment, not a scientific measurement.</p>
+    </section>
+  </main>
+
+  <footer class="shell"><span>AI 2027 Signal</span><span>Built in public · updated weekly</span></footer>
+  <script type="module" src="assets/app.js"></script>
+</body>
+</html>
