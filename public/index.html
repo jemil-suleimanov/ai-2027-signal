@@ -30,7 +30,7 @@
           <div class="score-head"><span>Scenario alignment</span><span id="confidence"></span></div>
           <div class="score-row"><span id="score">—</span><span class="score-denom">/100</span><span id="verdict" class="pill">Loading</span></div>
           <div class="meter"><i id="meter"></i><b class="scenario-tick" title="Scenario pace"></b></div>
-          <p id="score-note">Loading the latest weekly assessment…</p>
+          <p id="score-note" role="status" aria-live="polite" aria-atomic="true" aria-busy="true">Loading the latest weekly assessment…</p>
         </div>
         <div class="now-card">
           <span class="label">This week</span>
@@ -49,13 +49,13 @@
         <div class="marker scenario-marker"><span>Scenario</span><b id="scenario-marker"></b><small id="scenario-date"></small></div>
         <div class="marker reality-marker"><span>Observed</span><b id="reality-marker"></b><small>as of latest update</small></div>
       </div>
-      <div id="tracks" class="tracks"></div>
+      <div id="tracks" class="tracks" aria-live="polite" aria-busy="true"></div>
     </section>
 
     <section id="evidence" class="section evidence-wrap">
       <div class="shell">
         <div class="section-title light"><span>02 / Evidence log</span><h2>What moved the signal?</h2><p>Short weekly judgments, linked to the evidence behind them.</p></div>
-        <div id="updates" class="updates"></div>
+        <div id="updates" class="updates" aria-live="polite" aria-busy="true"></div>
       </div>
     </section>
 
