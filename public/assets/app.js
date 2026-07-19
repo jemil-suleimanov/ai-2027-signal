@@ -1,32 +1,104 @@
-const data = await fetch('./data/updates.json').then(r => r.json());
-const latest = data[0];
 const $ = id => document.getElementById(id);
+const updateFields = ['date','title','score','verdict','confidence','capabilities','automation','compute','geopolitics','model','model_note','scenario_marker','scenario_date','reality_marker','body','sources'];
+const publishedUpdatesUrl = 'https://github.com/jemil-suleimanov/ai-2027-signal/tree/main/content/updates';
 
-$('score').textContent = latest.score;
-$('verdict').textContent = latest.verdict;
-$('verdict').dataset.verdict = latest.verdict;
-$('confidence').textContent = `${latest.confidence} confidence`;
-$('meter').style.width = `${latest.score}%`;
-$('score-note').textContent = latest.body.split('\n\n')[0];
-$('week-title').textContent = latest.title;
-$('model').textContent = latest.model;
-$('model-note').textContent = latest.model_note;
-$('updated').textContent = `Assessment · ${new Date(`${latest.date}T12:00:00`).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })}`;
-$('scenario-marker').textContent = latest.scenario_marker;
-$('scenario-date').textContent = latest.scenario_date;
-$('reality-marker').textContent = latest.reality_marker;
+function setBusy(isBusy) {
+  for (const id of ['score-note','tracks','updates']) $(id).setAttribute('aria-busy', String(isBusy));
+}
 
-const trackNames = { capabilities:'Model capabilities', automation:'AI R&D automation', compute:'Compute scale-up', geopolitics:'Race dynamics' };
-$('tracks').innerHTML = Object.entries(trackNames).map(([key, label]) => `
-  <div class="track"><div><span>${label}</span><b>${latest[key]}</b></div><div class="track-meter"><i style="width:${latest[key]}%"></i></div></div>
-`).join('');
+function hasValidShape(data) {
+  return Array.isArray(data) && data.every(update =>
+    update && typeof update === 'object' && updateFields.every(field => field in update) && Array.isArray(update.sources)
+  );
+}
 
-$('updates').innerHTML = data.map((update, index) => `
-  <article class="update ${index ? '' : 'latest'}">
-    <div class="update-meta"><time>${update.date}</time><span>${index ? 'Archive' : 'Latest signal'}</span></div>
-    <div><h3>${update.title}</h3>${update.body.split('\n\n').map(p => `<p>${p}</p>`).join('')}
-      <div class="sources">${update.sources.map(s => `<a href="${s.url}" target="_blank" rel="noreferrer">${s.title} ↗</a>`).join('')}</div>
-    </div>
-    <div class="mini-score"><b>${update.score}</b><span>${update.verdict}</span></div>
-  </article>
-`).join('');
+function renderUnavailable(title, message) {
+  $('score').textContent = '—';
+  $('verdict').textContent = 'unavailable';
+  delete $('verdict').dataset.verdict;
+  $('confidence').textContent = 'data unavailable';
+  $('meter').style.width = '0%';
+  $('score-note').textContent = message;
+  $('week-title').textContent = title;
+  $('model').textContent = 'Tracker status';
+  $('model-note').textContent = message;
+  $('updated').textContent = 'Reload this page to retry';
+  $('scenario-marker').textContent = 'Latest scenario milestone unavailable';
+  $('scenario-date').textContent = '';
+  $('reality-marker').textContent = 'Latest observation unavailable';
+  $('tracks').innerHTML = `
+    <div class="track"><div><span>Track data unavailable</span><b>—</b></div><div class="track-meter"></div></div>
+  `;
+  $('updates').innerHTML = `
+    <article class="update">
+      <div class="update-meta"><span>Data status</span></div>
+      <div><h3>${title}</h3><p>${message}</p>
+        <div class="sources"><a href="${publishedUpdatesUrl}" target="_blank" rel="noreferrer">View published updates ↗</a></div>
+      </div>
+      <div class="mini-score"><b>—</b><span>unavailable</span></div>
+    </article>
+  `;
+}
+
+function renderUpdates(data) {
+  const latest = data[0];
+
+  $('score').textContent = latest.score;
+  $('verdict').textContent = latest.verdict;
+  $('verdict').dataset.verdict = latest.verdict;
+  $('confidence').textContent = `${latest.confidence} confidence`;
+  $('meter').style.width = `${latest.score}%`;
+  $('score-note').textContent = latest.body.split('\n\n')[0];
+  $('week-title').textContent = latest.title;
+  $('model').textContent = latest.model;
+  $('model-note').textContent = latest.model_note;
+  $('updated').textContent = `Assessment · ${new Date(`${latest.date}T12:00:00`).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })}`;
+  $('scenario-marker').textContent = latest.scenario_marker;
+  $('scenario-date').textContent = latest.scenario_date;
+  $('reality-marker').textContent = latest.reality_marker;
+
+  const trackNames = { capabilities:'Model capabilities', automation:'AI R&D automation', compute:'Compute scale-up', geopolitics:'Race dynamics' };
+  $('tracks').innerHTML = Object.entries(trackNames).map(([key, label]) => `
+    <div class="track"><div><span>${label}</span><b>${latest[key]}</b></div><div class="track-meter"><i style="width:${latest[key]}%"></i></div></div>
+  `).join('');
+
+  $('updates').innerHTML = data.map((update, index) => `
+    <article class="update ${index ? '' : 'latest'}">
+      <div class="update-meta"><time>${update.date}</time><span>${index ? 'Archive' : 'Latest signal'}</span></div>
+      <div><h3>${update.title}</h3>${update.body.split('\n\n').map(p => `<p>${p}</p>`).join('')}
+        <div class="sources">${update.sources.map(s => `<a href="${s.url}" target="_blank" rel="noreferrer">${s.title} ↗</a>`).join('')}</div>
+      </div>
+      <div class="mini-score"><b>${update.score}</b><span>${update.verdict}</span></div>
+    </article>
+  `).join('');
+}
+
+async function loadUpdates() {
+  try {
+    const response = await fetch('./data/updates.json');
+    if (!response.ok) throw new Error(`Updates request failed with ${response.status}`);
+
+    const data = await response.json();
+    if (!hasValidShape(data)) throw new Error('Updates data has an invalid shape');
+
+    if (!data.length) {
+      renderUnavailable(
+        'No assessment published yet',
+        'The tracker will display its first evidence-led assessment here once it is available.'
+      );
+      return;
+    }
+
+    renderUpdates(data);
+  } catch (error) {
+    console.error('Could not load weekly assessments.', error);
+    renderUnavailable(
+      'Assessment temporarily unavailable',
+      'The latest assessment could not be loaded. Please retry shortly or inspect the published updates in the repository.'
+    );
+  } finally {
+    setBusy(false);
+  }
+}
+
+void loadUpdates();
