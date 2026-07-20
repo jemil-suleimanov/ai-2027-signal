@@ -46,7 +46,7 @@ function renderUpdates(data) {
   $('score').textContent = latest.score;
   $('verdict').textContent = latest.verdict;
   $('verdict').dataset.verdict = latest.verdict;
-  $('confidence').textContent = `${latest.confidence} confidence`;
+  $('confidence').textContent = `Evidence confidence: ${latest.confidence}`;
   $('meter').style.width = `${latest.score}%`;
   $('score-note').textContent = latest.body.split('\n\n')[0];
   $('week-title').textContent = latest.title;
