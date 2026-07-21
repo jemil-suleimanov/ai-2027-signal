@@ -18,6 +18,7 @@ function renderUnavailable(title, message) {
   delete $('verdict').dataset.verdict;
   $('confidence').textContent = 'data unavailable';
   $('meter').style.width = '0%';
+  $('score-note').hidden = false;
   $('score-note').textContent = message;
   $('week-title').textContent = title;
   $('model').textContent = 'Tracker status';
@@ -48,7 +49,7 @@ function renderUpdates(data) {
   $('verdict').dataset.verdict = latest.verdict;
   $('confidence').textContent = `Evidence confidence: ${latest.confidence}`;
   $('meter').style.width = `${latest.score}%`;
-  $('score-note').textContent = latest.body.split('\n\n')[0];
+  $('score-note').hidden = true;
   $('week-title').textContent = latest.title;
   $('model').textContent = latest.model;
   $('model-note').textContent = latest.model_note;
