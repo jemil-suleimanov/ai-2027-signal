@@ -29,7 +29,9 @@
         <div class="score-card">
           <div class="score-head"><span>Scenario alignment</span><span id="confidence"></span></div>
           <div class="score-row"><span id="score">—</span><span class="score-denom">/100</span><span id="verdict" class="pill">Loading</span></div>
-          <div class="meter"><i id="meter"></i><b class="scenario-tick" title="Scenario pace"></b></div>
+          <div class="meter" id="alignment-meter" role="progressbar" aria-label="Overall scenario alignment" aria-valuemin="0" aria-valuemax="100" aria-valuetext="Loading">
+            <i id="meter"></i><b class="scenario-tick" title="Scenario pace"></b>
+          </div>
           <p class="score-definition"><strong>How to read this:</strong> alignment with dated milestones; an editorial judgment, not the probability that the scenario will occur.</p>
           <p id="score-note" role="status" aria-live="polite" aria-atomic="true" aria-busy="true">Loading the latest weekly assessment…</p>
         </div>

@@ -18,6 +18,8 @@ function renderUnavailable(title, message) {
   delete $('verdict').dataset.verdict;
   $('confidence').textContent = 'data unavailable';
   $('meter').style.width = '0%';
+  $('alignment-meter').removeAttribute('aria-valuenow');
+  $('alignment-meter').setAttribute('aria-valuetext', 'Assessment unavailable');
   $('score-note').hidden = false;
   $('score-note').textContent = message;
   $('week-title').textContent = title;
@@ -49,6 +51,8 @@ function renderUpdates(data) {
   $('verdict').dataset.verdict = latest.verdict;
   $('confidence').textContent = `Evidence confidence: ${latest.confidence}`;
   $('meter').style.width = `${latest.score}%`;
+  $('alignment-meter').setAttribute('aria-valuenow', String(latest.score));
+  $('alignment-meter').setAttribute('aria-valuetext', `${latest.score} out of 100 — ${latest.verdict}`);
   $('score-note').hidden = true;
   $('week-title').textContent = latest.title;
   $('model').textContent = latest.model;
@@ -60,7 +64,7 @@ function renderUpdates(data) {
 
   const trackNames = { capabilities:'Model capabilities', automation:'AI R&D automation', compute:'Compute scale-up', geopolitics:'Race dynamics' };
   $('tracks').innerHTML = Object.entries(trackNames).map(([key, label]) => `
-    <div class="track"><div><span>${label}</span><b>${latest[key]}</b></div><div class="track-meter"><i style="width:${latest[key]}%"></i></div></div>
+    <div class="track"><div><span>${label}</span><b>${latest[key]}</b></div><div class="track-meter" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${latest[key]}" aria-valuetext="${latest[key]} out of 100"><i style="width:${latest[key]}%"></i></div></div>
   `).join('');
 
   $('updates').innerHTML = data.map((update, index) => `
