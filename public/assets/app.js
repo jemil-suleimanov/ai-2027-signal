@@ -12,6 +12,21 @@ function hasValidShape(data) {
   );
 }
 
+function formatAssessmentDate(date) {
+  return new Date(`${date}T12:00:00`).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+}
+
+function describeScoreChange(data) {
+  if (data.length < 2) return 'First assessment';
+
+  const delta = data[0].score - data[1].score;
+  const previousDate = formatAssessmentDate(data[1].date);
+  if (delta === 0) return `No score change vs ${previousDate}`;
+
+  const points = Math.abs(delta);
+  return `${delta > 0 ? 'Up' : 'Down'} ${points} ${points === 1 ? 'point' : 'points'} vs ${previousDate}`;
+}
+
 function renderUnavailable(title, message) {
   $('score').textContent = '—';
   $('verdict').textContent = 'unavailable';
@@ -57,7 +72,7 @@ function renderUpdates(data) {
   $('week-title').textContent = latest.title;
   $('model').textContent = latest.model;
   $('model-note').textContent = latest.model_note;
-  $('updated').textContent = `Assessment · ${new Date(`${latest.date}T12:00:00`).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })}`;
+  $('updated').textContent = `Assessment · ${formatAssessmentDate(latest.date)} · ${describeScoreChange(data)}`;
   $('scenario-marker').textContent = latest.scenario_marker;
   $('scenario-date').textContent = latest.scenario_date;
   $('reality-marker').textContent = latest.reality_marker;
