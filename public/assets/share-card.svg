@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">AI 2027 Signal</title>
+  <desc id="description">An independent weekly tracker comparing the AI 2027 scenario with reality.</desc>
+  <rect width="1200" height="630" fill="#f2f0e7"/>
+  <rect x="0" y="0" width="18" height="630" fill="#d9ff43"/>
+  <circle cx="83" cy="73" r="27" fill="#172019"/>
+  <text x="83" y="82" text-anchor="middle" fill="#d9ff43" font-family="Arial, sans-serif" font-size="22" font-weight="700">27</text>
+  <text x="128" y="81" fill="#172019" font-family="Arial, sans-serif" font-size="24" font-weight="700">AI 2027 Signal</text>
+  <text x="1082" y="78" text-anchor="end" fill="#172019" font-family="monospace" font-size="16" letter-spacing="2">INDEPENDENT WEEKLY TRACKER</text>
+  <line x1="56" y1="120" x2="1144" y2="120" stroke="#172019" stroke-opacity="0.18"/>
+  <text x="56" y="232" fill="#172019" font-family="Arial, sans-serif" font-size="72" font-weight="700" letter-spacing="-3">Are we still on the</text>
+  <text x="56" y="320" fill="#172019" font-family="Georgia, serif" font-size="86" font-style="italic">AI 2027</text>
+  <text x="412" y="320" fill="#172019" font-family="Arial, sans-serif" font-size="86" font-weight="700" letter-spacing="-4">path?</text>
+  <text x="58" y="385" fill="#687169" font-family="Arial, sans-serif" font-size="25">Prediction vs. reality, grounded in public evidence.</text>
+  <rect x="56" y="459" width="1088" height="105" rx="3" fill="#172019"/>
+  <text x="88" y="504" fill="#d9ff43" font-family="monospace" font-size="16" letter-spacing="2">SCENARIO</text>
+  <text x="88" y="540" fill="#f2f0e7" font-family="Arial, sans-serif" font-size="24" font-weight="700">Dated milestones</text>
+  <line x1="330" y1="511" x2="978" y2="511" stroke="#687169" stroke-width="6"/>
+  <line x1="330" y1="511" x2="742" y2="511" stroke="#d9ff43" stroke-width="6"/>
+  <line x1="812" y1="493" x2="812" y2="529" stroke="#f2f0e7" stroke-width="3"/>
+  <text x="1112" y="504" text-anchor="end" fill="#d9ff43" font-family="monospace" font-size="16" letter-spacing="2">OBSERVED</text>
+  <text x="1112" y="540" text-anchor="end" fill="#f2f0e7" font-family="Arial, sans-serif" font-size="24" font-weight="700">Public evidence</text>
+  <text x="56" y="603" fill="#687169" font-family="monospace" font-size="15">AI-2027-SIGNAL · UPDATED WEEKLY · ZERO TRACKING</text>
+</svg>
