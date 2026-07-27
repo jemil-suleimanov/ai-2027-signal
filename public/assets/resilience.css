@@ -1,0 +1,43 @@
+:root {
+  --font-sans: Manrope, "Avenir Next", Avenir, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+.brand-mark,
+.eyebrow,
+.label,
+.section-title > span,
+.score-head,
+.score-denom,
+.pill,
+.date,
+.time-axis,
+.marker span,
+.marker small,
+.track b,
+.update-meta,
+.sources a,
+.mini-score span,
+.method-grid article > span,
+footer {
+  font-family: var(--font-mono);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
