@@ -3,7 +3,7 @@ const updateFields = ['date','title','score','verdict','confidence','capabilitie
 const publishedUpdatesUrl = 'https://github.com/jemil-suleimanov/ai-2027-signal/tree/main/content/updates';
 
 function setBusy(isBusy) {
-  for (const id of ['score-note','tracks','updates']) $(id).setAttribute('aria-busy', String(isBusy));
+  for (const id of ['score-note','tracks','history','updates']) $(id).setAttribute('aria-busy', String(isBusy));
 }
 
 function hasValidShape(data) {
@@ -27,6 +27,45 @@ function describeScoreChange(data) {
   return `${delta > 0 ? 'Up' : 'Down'} ${points} ${points === 1 ? 'point' : 'points'} vs ${previousDate}`;
 }
 
+function renderHistory(data) {
+  const history = [...data].reverse();
+  const width = 600;
+  const chartTop = 28;
+  const chartBottom = 138;
+  const chartLeft = 42;
+  const chartRight = 558;
+  const x = index => history.length === 1
+    ? width / 2
+    : chartLeft + (index * (chartRight - chartLeft) / (history.length - 1));
+  const y = score => chartBottom - (score / 100 * (chartBottom - chartTop));
+  const points = history.map((update, index) => `${x(index)},${y(update.score)}`).join(' ');
+
+  $('history-summary').textContent = history.length === 1
+    ? 'First published assessment'
+    : `${history.length} published assessments · ${history[0].score} → ${history.at(-1).score}`;
+  $('history').innerHTML = `
+    <svg class="history-chart" viewBox="0 0 ${width} 170" aria-hidden="true" focusable="false">
+      <line class="history-grid" x1="${chartLeft}" y1="${y(100)}" x2="${chartRight}" y2="${y(100)}"></line>
+      <line class="history-grid" x1="${chartLeft}" y1="${y(50)}" x2="${chartRight}" y2="${y(50)}"></line>
+      <line class="history-grid" x1="${chartLeft}" y1="${y(0)}" x2="${chartRight}" y2="${y(0)}"></line>
+      <text class="history-axis" x="4" y="${y(100) + 4}">100</text>
+      <text class="history-axis" x="10" y="${y(50) + 4}">50</text>
+      <text class="history-axis" x="16" y="${y(0) + 4}">0</text>
+      ${history.length > 1 ? `<polyline class="history-line" points="${points}"></polyline>` : ''}
+      ${history.map((update, index) => `
+        <g class="history-point">
+          <circle cx="${x(index)}" cy="${y(update.score)}" r="5"></circle>
+          <text x="${x(index)}" y="${y(update.score) - 12}" text-anchor="middle">${update.score}</text>
+        </g>
+      `).join('')}
+    </svg>
+    <ol class="history-values" aria-label="Published scenario alignment scores">
+      ${history.map(update => `<li><time datetime="${update.date}">${formatAssessmentDate(update.date)}</time><b>${update.score}/100</b></li>`).join('')}
+    </ol>
+    <p class="history-note">Published editorial assessments, shown on the full 0–100 scale. This is a record, not a forecast.</p>
+  `;
+}
+
 function renderUnavailable(title, message) {
   $('score').textContent = '—';
   $('verdict').textContent = 'unavailable';
@@ -47,6 +86,8 @@ function renderUnavailable(title, message) {
   $('tracks').innerHTML = `
     <div class="track"><div><span>Track data unavailable</span><b>—</b></div><div class="track-meter"></div></div>
   `;
+  $('history-summary').textContent = 'Assessment history unavailable';
+  $('history').innerHTML = '<p class="history-note">Published score history could not be loaded.</p>';
   $('updates').innerHTML = `
     <article class="update">
       <div class="update-meta"><span>Data status</span></div>
@@ -81,6 +122,8 @@ function renderUpdates(data) {
   $('tracks').innerHTML = Object.entries(trackNames).map(([key, label]) => `
     <div class="track"><div><span>${label}</span><b>${latest[key]}</b></div><div class="track-meter" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${latest[key]}" aria-valuetext="${latest[key]} out of 100"><i style="width:${latest[key]}%"></i></div></div>
   `).join('');
+
+  renderHistory(data);
 
   $('updates').innerHTML = data.map((update, index) => `
     <article class="update ${index ? '' : 'latest'}">
