@@ -1,9 +1,28 @@
 import { mkdir, readdir, readFile, rm, cp, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 
 const root = new URL('..', import.meta.url).pathname;
 const contentDir = join(root, 'content/updates');
 const dist = join(root, 'dist');
+const versionedAssets = ['assets/styles.css', 'assets/resilience.css', 'assets/app.js'];
+
+async function versionAssetReferences() {
+  const indexPath = join(dist, 'index.html');
+  let html = await readFile(indexPath, 'utf8');
+
+  for (const asset of versionedAssets) {
+    const contents = await readFile(join(dist, asset));
+    const version = createHash('sha256').update(contents).digest('hex').slice(0, 12);
+    const escapedAsset = asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const reference = new RegExp(`${escapedAsset}(?:\\?v=[^"']+)?`, 'g');
+
+    if (!html.includes(asset)) throw new Error(`index.html: missing ${asset} reference`);
+    html = html.replace(reference, `${asset}?v=${version}`);
+  }
+
+  await writeFile(indexPath, html);
+}
 
 function parse(text, file) {
   const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -24,6 +43,7 @@ updates.sort((a,b) => b.date.localeCompare(a.date));
 await rm(dist, { recursive:true, force:true });
 await mkdir(dist, { recursive:true });
 await cp(join(root, 'public'), dist, { recursive:true });
+await versionAssetReferences();
 await mkdir(join(dist, 'data'), { recursive:true });
 await writeFile(join(dist, 'data/updates.json'), JSON.stringify(updates, null, 2));
 console.log(`Built ${updates.length} update(s) into dist/`);
