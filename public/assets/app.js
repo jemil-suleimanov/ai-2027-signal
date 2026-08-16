@@ -1,6 +1,22 @@
 const $ = id => document.getElementById(id);
 const updateFields = ['date','title','score','verdict','confidence','capabilities','automation','compute','geopolitics','model','model_note','scenario_marker','scenario_date','reality_marker','body','sources'];
 const publishedUpdatesUrl = 'https://github.com/jemil-suleimanov/ai-2027-signal/tree/main/content/updates';
+const sourceHosts = {
+  'Scenario reference': new Set(['ai-2027.com', 'lesswrong.com']),
+  'Independent research': new Set(['artificialanalysis.ai', 'arcprize.org', 'epoch.ai', 'metr.org', 'transluce.org']),
+  'News reporting': new Set(['apnews.com', 'reuters.com']),
+  'Research paper': new Set(['arxiv.org']),
+  'First-party': new Set(['anthropic.com', 'api-docs.deepseek.com', 'huggingface.co', 'kimi.com', 'news.samsung.com', 'nvidianews.nvidia.com', 'openai.com', 'thinkingmachines.ai'])
+};
+
+function describeSource(source) {
+  try {
+    const host = new URL(source.url).hostname.replace(/^www\./, '');
+    return Object.entries(sourceHosts).find(([, hosts]) => hosts.has(host))?.[0] || 'Other source';
+  } catch {
+    return 'Other source';
+  }
+}
 
 function setBusy(isBusy) {
   for (const id of ['score-note','tracks','history','updates']) $(id).setAttribute('aria-busy', String(isBusy));
@@ -129,7 +145,10 @@ function renderUpdates(data) {
     <article class="update ${index ? '' : 'latest'}">
       <div class="update-meta"><time>${update.date}</time><span>${index ? 'Archive' : 'Latest signal'}</span></div>
       <div><h3>${update.title}</h3>${update.body.split('\n\n').map(p => `<p>${p}</p>`).join('')}
-        <div class="sources">${update.sources.map(s => `<a href="${s.url}" target="_blank" rel="noreferrer">${s.title} ↗</a>`).join('')}</div>
+        <div class="sources" aria-label="Sources">${update.sources.map(s => {
+          const kind = describeSource(s);
+          return `<a href="${s.url}" target="_blank" rel="noreferrer"><span class="source-kind">${kind}</span><span>${s.title} ↗</span></a>`;
+        }).join('')}</div>
       </div>
       <div class="mini-score"><b>${update.score}</b><span>${update.verdict}</span></div>
     </article>
