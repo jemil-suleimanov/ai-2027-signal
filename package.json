@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "dev": "node scripts/serve.mjs",
-    "check": "node scripts/check.mjs",
+    "check": "node scripts/check.mjs && node scripts/build.mjs && node scripts/check-build.mjs",
+    "check:build": "node scripts/check-build.mjs",
     "check:links": "node scripts/check-links.mjs"
   },
   "engines": { "node": ">=20" }
