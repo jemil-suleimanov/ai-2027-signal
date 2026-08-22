@@ -35,6 +35,8 @@ npm run dev
 
 No runtime framework or external client dependency is used. The build script turns Markdown frontmatter into static JSON; GitHub Pages serves the result.
 
+The same build also publishes `feed.xml`, a dependency-free Atom feed with one entry per dated assessment. Feed readers discover it through the page metadata.
+
 ## Independence
 
 This project is not affiliated with the AI Futures Project or the authors of AI 2027. It summarizes and critiques a public scenario; it does not reproduce the original article.
