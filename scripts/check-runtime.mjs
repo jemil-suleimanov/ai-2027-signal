@@ -19,6 +19,7 @@ class FakeElement {
     this.innerHTML = '';
     this.style = {};
     this.textContent = '';
+    this.scrolledIntoView = false;
   }
 
   getAttribute(name) {
@@ -32,10 +33,15 @@ class FakeElement {
   setAttribute(name, value) {
     this.attributes.set(name, String(value));
   }
+
+  scrollIntoView() {
+    this.scrolledIntoView = true;
+  }
 }
 
-async function render(response) {
-  const elements = new Map(elementIds.map(id => [id, new FakeElement()]));
+async function render(response, hash = '') {
+  const updateIds = publishedUpdates.map(update => `update-${update.date}`);
+  const elements = new Map([...elementIds, ...updateIds].map(id => [id, new FakeElement()]));
   for (const id of ['score-note', 'tracks', 'history', 'updates']) {
     elements.get(id).setAttribute('aria-busy', 'true');
   }
@@ -55,6 +61,7 @@ async function render(response) {
       }
     },
     fetch: async () => response,
+    location: { hash },
     URL
   };
 
@@ -105,6 +112,22 @@ assert.equal(occurrences(element(success, 'tracks').innerHTML, 'role="progressba
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="update '), publishedUpdates.length);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="source-kind"'), sourceCount);
 assert.equal(element(success, 'updates').innerHTML.includes('Other source'), false);
+
+const requestedDate = publishedUpdates.at(-1).date;
+const deepLink = await render({
+  ok: true,
+  status: 200,
+  json: async () => structuredClone(publishedUpdates)
+}, `#update-${requestedDate}`);
+assert.equal(element(deepLink, `update-${requestedDate}`).scrolledIntoView, true);
+
+const malformedDeepLink = await render({
+  ok: true,
+  status: 200,
+  json: async () => structuredClone(publishedUpdates)
+}, '#update-%E0%A4%A');
+assertSettled(malformedDeepLink);
+assert.deepEqual(malformedDeepLink.errors, []);
 
 const empty = await render({ ok: true, status: 200, json: async () => [] });
 assertSettled(empty);

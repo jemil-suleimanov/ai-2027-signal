@@ -153,6 +153,14 @@ function renderUpdates(data) {
       <div class="mini-score"><b>${update.score}</b><span>${update.verdict}</span></div>
     </article>
   `).join('');
+
+  let requestedUpdate = '';
+  try {
+    requestedUpdate = decodeURIComponent(location.hash.slice(1));
+  } catch {}
+  if (/^update-\d{4}-\d{2}-\d{2}$/.test(requestedUpdate)) {
+    document.getElementById(requestedUpdate)?.scrollIntoView();
+  }
 }
 
 async function loadUpdates() {
