@@ -121,6 +121,14 @@ const deepLink = await render({
 }, `#update-${requestedDate}`);
 assert.equal(element(deepLink, `update-${requestedDate}`).scrolledIntoView, true);
 
+const malformedDeepLink = await render({
+  ok: true,
+  status: 200,
+  json: async () => structuredClone(publishedUpdates)
+}, '#update-%E0%A4%A');
+assertSettled(malformedDeepLink);
+assert.deepEqual(malformedDeepLink.errors, []);
+
 const empty = await render({ ok: true, status: 200, json: async () => [] });
 assertSettled(empty);
 assert.deepEqual(empty.errors, []);
