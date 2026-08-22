@@ -142,7 +142,7 @@ function renderUpdates(data) {
   renderHistory(data);
 
   $('updates').innerHTML = data.map((update, index) => `
-    <article class="update ${index ? '' : 'latest'}">
+    <article id="update-${update.date}" class="update ${index ? '' : 'latest'}">
       <div class="update-meta"><time>${update.date}</time><span>${index ? 'Archive' : 'Latest signal'}</span></div>
       <div><h3>${update.title}</h3>${update.body.split('\n\n').map(p => `<p>${p}</p>`).join('')}
         <div class="sources" aria-label="Sources">${update.sources.map(s => {
