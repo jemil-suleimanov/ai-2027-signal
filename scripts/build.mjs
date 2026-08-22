@@ -6,6 +6,45 @@ const root = new URL('..', import.meta.url).pathname;
 const contentDir = join(root, 'content/updates');
 const dist = join(root, 'dist');
 const versionedAssets = ['assets/styles.css', 'assets/resilience.css', 'assets/app.js'];
+const siteUrl = 'https://jemil-suleimanov.github.io/ai-2027-signal/';
+
+function escapeXml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;');
+}
+
+function buildAtomFeed(updates) {
+  const entries = updates.map(update => {
+    const entryUrl = `${siteUrl}#update-${update.date}`;
+    const published = `${update.date}T00:00:00Z`;
+
+    return `  <entry>
+    <title>${escapeXml(update.title)}</title>
+    <link href="${escapeXml(entryUrl)}" />
+    <id>${escapeXml(entryUrl)}</id>
+    <published>${published}</published>
+    <updated>${published}</updated>
+    <summary>${escapeXml(`${update.score}/100 · ${update.verdict} · ${update.model_note}`)}</summary>
+  </entry>`;
+  }).join('\n');
+
+  return `<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>AI 2027 Signal</title>
+  <subtitle>Weekly evidence-led assessments of observed AI progress against the AI 2027 scenario.</subtitle>
+  <link href="${siteUrl}feed.xml" rel="self" />
+  <link href="${siteUrl}" />
+  <id>${siteUrl}</id>
+  <author><name>AI 2027 Signal</name></author>
+  <updated>${updates[0].date}T00:00:00Z</updated>
+${entries}
+</feed>
+`;
+}
 
 async function versionAssetReferences() {
   const indexPath = join(dist, 'index.html');
@@ -46,4 +85,5 @@ await cp(join(root, 'public'), dist, { recursive:true });
 await versionAssetReferences();
 await mkdir(join(dist, 'data'), { recursive:true });
 await writeFile(join(dist, 'data/updates.json'), JSON.stringify(updates, null, 2));
+await writeFile(join(dist, 'feed.xml'), buildAtomFeed(updates));
 console.log(`Built ${updates.length} update(s) into dist/`);
