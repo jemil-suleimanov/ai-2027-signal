@@ -154,7 +154,10 @@ function renderUpdates(data) {
     </article>
   `).join('');
 
-  const requestedUpdate = decodeURIComponent(location.hash.slice(1));
+  let requestedUpdate = '';
+  try {
+    requestedUpdate = decodeURIComponent(location.hash.slice(1));
+  } catch {}
   if (/^update-\d{4}-\d{2}-\d{2}$/.test(requestedUpdate)) {
     document.getElementById(requestedUpdate)?.scrollIntoView();
   }
