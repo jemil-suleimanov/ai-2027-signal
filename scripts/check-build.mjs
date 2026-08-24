@@ -28,6 +28,22 @@ const feedBuffer = await read('feed.xml');
 if (indexBuffer) {
   const html = indexBuffer.toString('utf8');
 
+  const structuredDataMatches = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+  if (structuredDataMatches.length !== 1) {
+    fail('index.html must contain exactly one JSON-LD block');
+  } else {
+    try {
+      const structuredData = JSON.parse(structuredDataMatches[0][1]);
+      if (structuredData['@context'] !== 'https://schema.org') fail('JSON-LD must use the schema.org context');
+      if (structuredData['@type'] !== 'WebSite') fail('JSON-LD must describe the site as a WebSite');
+      if (structuredData.url !== 'https://jemil-suleimanov.github.io/ai-2027-signal/') fail('JSON-LD URL must match the canonical site URL');
+      if (structuredData.inLanguage !== 'en') fail('JSON-LD language must match the English site');
+      if (structuredData.isAccessibleForFree !== true) fail('JSON-LD must describe the site as freely accessible');
+    } catch {
+      fail('index.html JSON-LD is not valid JSON');
+    }
+  }
+
   for (const asset of versionedAssets) {
     const escapedAsset = asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const matches = [...html.matchAll(new RegExp(`${escapedAsset}\\?v=([a-f0-9]{12})`, 'g'))];
@@ -79,6 +95,21 @@ if (updatesBuffer) {
         fail('every generated update must retain at least one source');
       }
 
+      if (indexBuffer) {
+        const html = indexBuffer.toString('utf8');
+        const structuredDataMatch = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+        if (structuredDataMatch) {
+          try {
+            const structuredData = JSON.parse(structuredDataMatch[1]);
+            if (structuredData.dateModified !== updates[0].date) {
+              fail('JSON-LD modified date must match the latest assessment');
+            }
+          } catch {
+            // Invalid JSON is reported with the index checks above.
+          }
+        }
+      }
+
       if (feedBuffer) {
         const feed = feedBuffer.toString('utf8');
         const entryCount = (feed.match(/<entry>/g) || []).length;
@@ -97,4 +128,4 @@ if (updatesBuffer) {
 }
 
 if (failures) process.exit(1);
-console.log(`Build checks passed for ${versionedAssets.length} versioned assets and the Atom feed`);
+console.log(`Build checks passed for ${versionedAssets.length} versioned assets, structured metadata, and the Atom feed`);
