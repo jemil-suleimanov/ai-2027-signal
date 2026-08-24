@@ -46,6 +46,37 @@ ${entries}
 `;
 }
 
+function buildStructuredData(latestUpdate) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'AI 2027 Signal',
+    url: siteUrl,
+    description: 'An independent weekly tracker comparing observed AI progress with the dated milestones and causal mechanisms in the AI 2027 scenario.',
+    dateModified: latestUpdate.date,
+    inLanguage: 'en',
+    isAccessibleForFree: true,
+    about: {
+      '@type': 'Thing',
+      name: 'AI 2027 scenario',
+      url: 'https://ai-2027.com/'
+    }
+  };
+}
+
+async function injectStructuredData(latestUpdate) {
+  const indexPath = join(dist, 'index.html');
+  let html = await readFile(indexPath, 'utf8');
+  const marker = '</head>';
+
+  if (!html.includes(marker)) throw new Error('index.html: missing closing head tag');
+  if (html.includes('type="application/ld+json"')) throw new Error('index.html: structured data already present');
+
+  const structuredData = JSON.stringify(buildStructuredData(latestUpdate));
+  html = html.replace(marker, `  <script type="application/ld+json">${structuredData}</script>\n${marker}`);
+  await writeFile(indexPath, html);
+}
+
 async function versionAssetReferences() {
   const indexPath = join(dist, 'index.html');
   let html = await readFile(indexPath, 'utf8');
@@ -82,6 +113,7 @@ updates.sort((a,b) => b.date.localeCompare(a.date));
 await rm(dist, { recursive:true, force:true });
 await mkdir(dist, { recursive:true });
 await cp(join(root, 'public'), dist, { recursive:true });
+await injectStructuredData(updates[0]);
 await versionAssetReferences();
 await mkdir(join(dist, 'data'), { recursive:true });
 await writeFile(join(dist, 'data/updates.json'), JSON.stringify(updates, null, 2));
