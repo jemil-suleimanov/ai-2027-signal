@@ -9,6 +9,24 @@ const sourceHosts = {
   'First-party': new Set(['anthropic.com', 'api-docs.deepseek.com', 'huggingface.co', 'kimi.com', 'news.samsung.com', 'nvidianews.nvidia.com', 'openai.com', 'thinkingmachines.ai'])
 };
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function safeSourceUrl(value) {
+  try {
+    const url = new URL(value);
+    return ['http:', 'https:'].includes(url.protocol) ? url.href : publishedUpdatesUrl;
+  } catch {
+    return publishedUpdatesUrl;
+  }
+}
+
 function describeSource(source) {
   try {
     const host = new URL(source.url).hostname.replace(/^www\./, '');
@@ -71,12 +89,12 @@ function renderHistory(data) {
       ${history.map((update, index) => `
         <g class="history-point">
           <circle cx="${x(index)}" cy="${y(update.score)}" r="5"></circle>
-          <text x="${x(index)}" y="${y(update.score) - 12}" text-anchor="middle">${update.score}</text>
+          <text x="${x(index)}" y="${y(update.score) - 12}" text-anchor="middle">${escapeHtml(update.score)}</text>
         </g>
       `).join('')}
     </svg>
     <ol class="history-values" aria-label="Published scenario alignment scores">
-      ${history.map(update => `<li><time datetime="${update.date}">${formatAssessmentDate(update.date)}</time><b>${update.score}/100</b></li>`).join('')}
+      ${history.map(update => `<li><time datetime="${escapeHtml(update.date)}">${escapeHtml(formatAssessmentDate(update.date))}</time><b>${escapeHtml(update.score)}/100</b></li>`).join('')}
     </ol>
     <p class="history-note">Published editorial assessments, shown on the full 0–100 scale. This is a record, not a forecast.</p>
   `;
@@ -136,21 +154,21 @@ function renderUpdates(data) {
 
   const trackNames = { capabilities:'Model capabilities', automation:'AI R&D automation', compute:'Compute scale-up', geopolitics:'Race dynamics' };
   $('tracks').innerHTML = Object.entries(trackNames).map(([key, label]) => `
-    <div class="track"><div><span>${label}</span><b>${latest[key]}</b></div><div class="track-meter" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${latest[key]}" aria-valuetext="${latest[key]} out of 100"><i style="width:${latest[key]}%"></i></div></div>
+    <div class="track"><div><span>${label}</span><b>${escapeHtml(latest[key])}</b></div><div class="track-meter" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${escapeHtml(latest[key])}" aria-valuetext="${escapeHtml(latest[key])} out of 100"><i style="width:${escapeHtml(latest[key])}%"></i></div></div>
   `).join('');
 
   renderHistory(data);
 
   $('updates').innerHTML = data.map((update, index) => `
-    <article id="update-${update.date}" class="update ${index ? '' : 'latest'}">
-      <div class="update-meta"><time>${update.date}</time><span>${index ? 'Archive' : 'Latest signal'}</span></div>
-      <div><h3>${update.title}</h3>${update.body.split('\n\n').map(p => `<p>${p}</p>`).join('')}
+    <article id="update-${escapeHtml(update.date)}" class="update ${index ? '' : 'latest'}">
+      <div class="update-meta"><time datetime="${escapeHtml(update.date)}">${escapeHtml(update.date)}</time><span>${index ? 'Archive' : 'Latest signal'}</span></div>
+      <div><h3>${escapeHtml(update.title)}</h3>${update.body.split('\n\n').map(p => `<p>${escapeHtml(p)}</p>`).join('')}
         <div class="sources" aria-label="Sources">${update.sources.map(s => {
           const kind = describeSource(s);
-          return `<a href="${s.url}" target="_blank" rel="noreferrer"><span class="source-kind">${kind}</span><span>${s.title} ↗</span></a>`;
+          return `<a href="${escapeHtml(safeSourceUrl(s.url))}" target="_blank" rel="noreferrer"><span class="source-kind">${kind}</span><span>${escapeHtml(s.title)} ↗</span></a>`;
         }).join('')}</div>
       </div>
-      <div class="mini-score"><b>${update.score}</b><span>${update.verdict}</span></div>
+      <div class="mini-score"><b>${escapeHtml(update.score)}</b><span>${escapeHtml(update.verdict)}</span></div>
     </article>
   `).join('');
 
