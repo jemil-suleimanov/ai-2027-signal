@@ -113,6 +113,23 @@ assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="update '
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="source-kind"'), sourceCount);
 assert.equal(element(success, 'updates').innerHTML.includes('Other source'), false);
 
+const markupPayload = '<img src=x onerror="alert(1)">';
+const unsafeMarkup = structuredClone(publishedUpdates);
+unsafeMarkup[0].title = markupPayload;
+unsafeMarkup[0].body = `Observed text ${markupPayload}`;
+unsafeMarkup[0].sources = [{ title: markupPayload, url: 'javascript:alert(1)' }];
+const escapedMarkup = await render({
+  ok: true,
+  status: 200,
+  json: async () => unsafeMarkup
+});
+const escapedUpdatesHtml = element(escapedMarkup, 'updates').innerHTML;
+assertSettled(escapedMarkup);
+assert.deepEqual(escapedMarkup.errors, []);
+assert.equal(escapedUpdatesHtml.includes('<img'), false);
+assert.equal(occurrences(escapedUpdatesHtml, '&lt;img'), 3);
+assert.match(escapedUpdatesHtml, /href="https:\/\/github\.com\/jemil-suleimanov\/ai-2027-signal\/tree\/main\/content\/updates"/);
+
 const requestedDate = publishedUpdates.at(-1).date;
 const deepLink = await render({
   ok: true,
