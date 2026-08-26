@@ -1,5 +1,9 @@
 const $ = id => document.getElementById(id);
 const updateFields = ['date','title','score','verdict','confidence','capabilities','automation','compute','geopolitics','model','model_note','scenario_marker','scenario_date','reality_marker','body','sources'];
+const scoreFields = ['score','capabilities','automation','compute','geopolitics'];
+const textFields = ['date','title','verdict','confidence','model','model_note','scenario_marker','scenario_date','reality_marker','body'];
+const verdicts = new Set(['materially behind','behind','near','ahead','materially ahead']);
+const confidenceLevels = new Set(['low','medium','high']);
 const publishedUpdatesUrl = 'https://github.com/jemil-suleimanov/ai-2027-signal/tree/main/content/updates';
 const sourceHosts = {
   'Scenario reference': new Set(['ai-2027.com', 'lesswrong.com']),
@@ -40,10 +44,37 @@ function setBusy(isBusy) {
   for (const id of ['score-note','tracks','history','updates']) $(id).setAttribute('aria-busy', String(isBusy));
 }
 
+function isRealDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
+}
+
 function hasValidShape(data) {
-  return Array.isArray(data) && data.every(update =>
-    update && typeof update === 'object' && updateFields.every(field => field in update) && Array.isArray(update.sources)
-  );
+  if (!Array.isArray(data)) return false;
+
+  const dates = new Set();
+  return data.every((update, index) => {
+    if (!update || typeof update !== 'object' || Array.isArray(update)) return false;
+    if (!updateFields.every(field => field in update)) return false;
+    if (!textFields.every(field => typeof update[field] === 'string' && update[field].trim())) return false;
+    if (!scoreFields.every(field => Number.isInteger(update[field]) && update[field] >= 0 && update[field] <= 100)) return false;
+    if (!isRealDate(update.date) || dates.has(update.date)) return false;
+    if (index && data[index - 1].date <= update.date) return false;
+    if (!verdicts.has(update.verdict) || !confidenceLevels.has(update.confidence)) return false;
+    if (!Array.isArray(update.sources) || !update.sources.every(source => {
+      if (!source || typeof source !== 'object' || Array.isArray(source)) return false;
+      if (typeof source.title !== 'string' || !source.title.trim() || typeof source.url !== 'string') return false;
+      try {
+        return ['http:', 'https:'].includes(new URL(source.url).protocol);
+      } catch {
+        return false;
+      }
+    })) return false;
+
+    dates.add(update.date);
+    return true;
+  });
 }
 
 function formatAssessmentDate(date) {

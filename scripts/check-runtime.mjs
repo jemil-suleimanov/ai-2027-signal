@@ -117,7 +117,7 @@ const markupPayload = '<img src=x onerror="alert(1)">';
 const unsafeMarkup = structuredClone(publishedUpdates);
 unsafeMarkup[0].title = markupPayload;
 unsafeMarkup[0].body = `Observed text ${markupPayload}`;
-unsafeMarkup[0].sources = [{ title: markupPayload, url: 'javascript:alert(1)' }];
+unsafeMarkup[0].sources = [{ title: markupPayload, url: 'https://example.com/evidence' }];
 const escapedMarkup = await render({
   ok: true,
   status: 200,
@@ -128,7 +128,27 @@ assertSettled(escapedMarkup);
 assert.deepEqual(escapedMarkup.errors, []);
 assert.equal(escapedUpdatesHtml.includes('<img'), false);
 assert.equal(occurrences(escapedUpdatesHtml, '&lt;img'), 3);
-assert.match(escapedUpdatesHtml, /href="https:\/\/github\.com\/jemil-suleimanov\/ai-2027-signal\/tree\/main\/content\/updates"/);
+assert.match(escapedUpdatesHtml, /href="https:\/\/example\.com\/evidence"/);
+
+for (const mutate of [
+  updates => { updates[0].score = 101; },
+  updates => { updates[0].date = '2026-02-30'; },
+  updates => { updates[0].sources[0].url = 'javascript:alert(1)'; },
+  updates => { updates[1].date = updates[0].date; }
+]) {
+  const malformedUpdates = structuredClone(publishedUpdates);
+  mutate(malformedUpdates);
+  const malformed = await render({
+    ok: true,
+    status: 200,
+    json: async () => malformedUpdates
+  });
+  assertSettled(malformed);
+  assert.equal(malformed.errors.length, 1);
+  assert.equal(element(malformed, 'score').textContent, '—');
+  assert.equal(element(malformed, 'verdict').textContent, 'unavailable');
+  assert.equal(element(malformed, 'week-title').textContent, 'Assessment temporarily unavailable');
+}
 
 const requestedDate = publishedUpdates.at(-1).date;
 const deepLink = await render({
@@ -171,4 +191,4 @@ assert.equal(element(unavailable, 'week-title').textContent, 'Assessment tempora
 assert.match(element(unavailable, 'score-note').textContent, /could not be loaded/);
 assert.match(element(unavailable, 'history').innerHTML, /could not be loaded/);
 
-console.log('Runtime checks passed for success, empty, and unavailable states');
+console.log('Runtime checks passed for success, empty, unavailable, hostile, and malformed states');
