@@ -24,6 +24,7 @@ async function read(path) {
 const indexBuffer = await read('index.html');
 const updatesBuffer = await read('data/updates.json');
 const feedBuffer = await read('feed.xml');
+const resilienceBuffer = await read('assets/resilience.css');
 
 if (indexBuffer) {
   const html = indexBuffer.toString('utf8');
@@ -76,6 +77,13 @@ if (indexBuffer) {
     'aria-labelledby="method-heading"'
   ]) {
     if (!html.includes(requiredMarkup)) fail(`missing accessibility contract: ${requiredMarkup}`);
+  }
+}
+
+if (resilienceBuffer) {
+  const css = resilienceBuffer.toString('utf8');
+  if (!css.includes('@media (max-width: 780px)') || !css.includes('.nav nav {\n    display: flex;')) {
+    fail('mobile primary navigation must remain visible');
   }
 }
 
