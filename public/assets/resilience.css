@@ -27,6 +27,11 @@ footer {
   font-family: var(--font-mono);
 }
 
+.feed-link {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
 .sources a {
   display: inline-flex;
   align-items: center;
@@ -175,6 +180,14 @@ footer {
 
   .nav nav a {
     padding: 5px 0;
+  }
+
+  footer {
+    height: auto;
+    min-height: 100px;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    padding: 24px 0;
   }
 
   .history-card {
