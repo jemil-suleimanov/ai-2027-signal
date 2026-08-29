@@ -8,7 +8,8 @@ const publishedUpdates = JSON.parse(await readFile(new URL('dist/data/updates.js
 const elementIds = [
   'score-note', 'tracks', 'history', 'updates', 'history-summary', 'score', 'verdict',
   'confidence', 'meter', 'alignment-meter', 'week-title', 'model', 'model-note',
-  'updated', 'scenario-marker', 'scenario-date', 'reality-marker'
+  'updated', 'scenario-marker', 'scenario-date', 'reality-marker', 'freshness',
+  'freshness-label'
 ];
 
 class FakeElement {
@@ -39,7 +40,7 @@ class FakeElement {
   }
 }
 
-async function render(response, hash = '') {
+async function render(response, hash = '', now = '2026-08-29T12:00:00Z') {
   const updateIds = publishedUpdates.map(update => `update-${update.date}`);
   const elements = new Map([...elementIds, ...updateIds].map(id => [id, new FakeElement()]));
   for (const id of ['score-note', 'tracks', 'history', 'updates']) {
@@ -48,6 +49,12 @@ async function render(response, hash = '') {
   elements.get('alignment-meter').setAttribute('aria-valuenow', '0');
 
   const errors = [];
+  const NativeDate = Date;
+  class FixedDate extends NativeDate {
+    constructor(...args) {
+      super(...(args.length ? args : [now]));
+    }
+  }
   const context = {
     console: {
       error: (...messages) => errors.push(messages.map(String).join(' ')),
@@ -62,6 +69,7 @@ async function render(response, hash = '') {
     },
     fetch: async () => response,
     location: { hash },
+    Date: FixedDate,
     URL
   };
 
@@ -103,6 +111,9 @@ assert.equal(
   `${latest.score} out of 100 — ${latest.verdict}`
 );
 assert.equal(element(success, 'score-note').hidden, true);
+assert.equal(element(success, 'freshness').dataset.freshness, 'current');
+assert.equal(element(success, 'freshness-label').textContent, 'Updated weekly');
+assert.match(element(success, 'freshness').getAttribute('title'), /Latest assessment: .+ \(6 days ago\)/);
 assert.match(element(success, 'updated').textContent, /^Assessment · .+ · (?:First assessment|No score change|Up|Down)/);
 assert.equal(
   element(success, 'history-summary').textContent,
@@ -112,6 +123,18 @@ assert.equal(occurrences(element(success, 'tracks').innerHTML, 'role="progressba
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="update '), publishedUpdates.length);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="source-kind"'), sourceCount);
 assert.equal(element(success, 'updates').innerHTML.includes('Other source'), false);
+
+const staleUpdate = structuredClone(publishedUpdates[0]);
+staleUpdate.date = '2020-01-01';
+const stale = await render({
+  ok: true,
+  status: 200,
+  json: async () => [staleUpdate]
+});
+assertSettled(stale);
+assert.deepEqual(stale.errors, []);
+assert.equal(element(stale, 'freshness').dataset.freshness, 'overdue');
+assert.equal(element(stale, 'freshness-label').textContent, 'Update overdue');
 
 const markupPayload = '<img src=x onerror="alert(1)">';
 const unsafeMarkup = structuredClone(publishedUpdates);
@@ -174,6 +197,8 @@ assert.equal(element(empty, 'week-title').textContent, 'No assessment published 
 assert.equal(element(empty, 'score-note').hidden, false);
 assert.equal(element(empty, 'alignment-meter').getAttribute('aria-valuenow'), null);
 assert.equal(element(empty, 'alignment-meter').getAttribute('aria-valuetext'), 'Assessment unavailable');
+assert.equal(element(empty, 'freshness').dataset.freshness, 'unavailable');
+assert.equal(element(empty, 'freshness-label').textContent, 'Update status unavailable');
 assert.match(element(empty, 'updates').innerHTML, /View published updates/);
 
 const unavailable = await render({

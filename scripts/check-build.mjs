@@ -71,6 +71,8 @@ if (indexBuffer) {
   for (const requiredMarkup of [
     '<main id="main-content" tabindex="-1">',
     '<nav aria-label="Primary navigation">',
+    '<div id="freshness" class="eyebrow" data-freshness="unknown">',
+    '<span id="freshness-label" role="status" aria-live="polite">Updated weekly</span>',
     '<a class="feed-link" href="feed.xml">Subscribe via RSS / Atom ↗</a>',
     'role="progressbar" aria-label="Overall scenario alignment"',
     'aria-labelledby="timeline-heading"',

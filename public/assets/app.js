@@ -4,6 +4,7 @@ const scoreFields = ['score','capabilities','automation','compute','geopolitics'
 const textFields = ['date','title','verdict','confidence','model','model_note','scenario_marker','scenario_date','reality_marker','body'];
 const verdicts = new Set(['materially behind','behind','near','ahead','materially ahead']);
 const confidenceLevels = new Set(['low','medium','high']);
+const freshnessGraceDays = 10;
 const publishedUpdatesUrl = 'https://github.com/jemil-suleimanov/ai-2027-signal/tree/main/content/updates';
 const sourceHosts = {
   'Scenario reference': new Set(['ai-2027.com', 'lesswrong.com']),
@@ -81,6 +82,27 @@ function formatAssessmentDate(date) {
   return new Date(`${date}T12:00:00`).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
 }
 
+function renderFreshness(date) {
+  const now = new Date();
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const assessmentDay = Date.parse(`${date}T00:00:00Z`);
+  const ageInDays = Math.max(0, Math.floor((today - assessmentDay) / 86400000));
+  const isOverdue = ageInDays > freshnessGraceDays;
+
+  $('freshness').dataset.freshness = isOverdue ? 'overdue' : 'current';
+  $('freshness-label').textContent = isOverdue ? 'Update overdue' : 'Updated weekly';
+  $('freshness').setAttribute(
+    'title',
+    `Latest assessment: ${formatAssessmentDate(date)} (${ageInDays} ${ageInDays === 1 ? 'day' : 'days'} ago)`
+  );
+}
+
+function renderFreshnessUnavailable() {
+  $('freshness').dataset.freshness = 'unavailable';
+  $('freshness-label').textContent = 'Update status unavailable';
+  $('freshness').removeAttribute('title');
+}
+
 function describeScoreChange(data) {
   if (data.length < 2) return 'First assessment';
 
@@ -132,6 +154,7 @@ function renderHistory(data) {
 }
 
 function renderUnavailable(title, message) {
+  renderFreshnessUnavailable();
   $('score').textContent = '—';
   $('verdict').textContent = 'unavailable';
   delete $('verdict').dataset.verdict;
@@ -166,6 +189,8 @@ function renderUnavailable(title, message) {
 
 function renderUpdates(data) {
   const latest = data[0];
+
+  renderFreshness(latest.date);
 
   $('score').textContent = latest.score;
   $('verdict').textContent = latest.verdict;
