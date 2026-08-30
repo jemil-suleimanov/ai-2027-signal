@@ -40,7 +40,7 @@ class FakeElement {
   }
 }
 
-async function render(response, hash = '', now = '2026-08-29T12:00:00Z') {
+async function render(response, hash = '', now = `${publishedUpdates[0].date}T12:00:00Z`) {
   const updateIds = publishedUpdates.map(update => `update-${update.date}`);
   const elements = new Map([...elementIds, ...updateIds].map(id => [id, new FakeElement()]));
   for (const id of ['score-note', 'tracks', 'history', 'updates']) {
@@ -92,6 +92,12 @@ function occurrences(text, fragment) {
   return text.split(fragment).length - 1;
 }
 
+function daysAfter(date, days) {
+  const value = new Date(`${date}T12:00:00Z`);
+  value.setUTCDate(value.getUTCDate() + days);
+  return value.toISOString();
+}
+
 const success = await render({
   ok: true,
   status: 200,
@@ -113,7 +119,7 @@ assert.equal(
 assert.equal(element(success, 'score-note').hidden, true);
 assert.equal(element(success, 'freshness').dataset.freshness, 'current');
 assert.equal(element(success, 'freshness-label').textContent, 'Updated weekly');
-assert.match(element(success, 'freshness').getAttribute('title'), /Latest assessment: .+ \(\d+ days? ago\)/);
+assert.match(element(success, 'freshness').getAttribute('title'), /Latest assessment: .+ \(0 days ago\)/);
 assert.match(element(success, 'updated').textContent, /^Assessment · .+ · (?:First assessment|No score change|Up|Down)/);
 assert.equal(
   element(success, 'history-summary').textContent,
@@ -123,6 +129,21 @@ assert.equal(occurrences(element(success, 'tracks').innerHTML, 'role="progressba
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="update '), publishedUpdates.length);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="source-kind"'), sourceCount);
 assert.equal(element(success, 'updates').innerHTML.includes('Other source'), false);
+
+const latestOnlyResponse = {
+  ok: true,
+  status: 200,
+  json: async () => [structuredClone(latest)]
+};
+const graceBoundary = await render(latestOnlyResponse, '', daysAfter(latest.date, 10));
+assert.equal(element(graceBoundary, 'freshness').dataset.freshness, 'current');
+assert.equal(element(graceBoundary, 'freshness-label').textContent, 'Updated weekly');
+assert.match(element(graceBoundary, 'freshness').getAttribute('title'), /\(10 days ago\)/);
+
+const overdueBoundary = await render(latestOnlyResponse, '', daysAfter(latest.date, 11));
+assert.equal(element(overdueBoundary, 'freshness').dataset.freshness, 'overdue');
+assert.equal(element(overdueBoundary, 'freshness-label').textContent, 'Update overdue');
+assert.match(element(overdueBoundary, 'freshness').getAttribute('title'), /\(11 days ago\)/);
 
 const staleUpdate = structuredClone(publishedUpdates[0]);
 staleUpdate.date = '2020-01-01';
@@ -216,4 +237,4 @@ assert.equal(element(unavailable, 'week-title').textContent, 'Assessment tempora
 assert.match(element(unavailable, 'score-note').textContent, /could not be loaded/);
 assert.match(element(unavailable, 'history').innerHTML, /could not be loaded/);
 
-console.log('Runtime checks passed for success, empty, unavailable, hostile, and malformed states');
+console.log('Runtime checks passed for success, freshness boundaries, empty, unavailable, hostile, and malformed states');
