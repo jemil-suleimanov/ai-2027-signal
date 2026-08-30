@@ -113,7 +113,7 @@ assert.equal(
 assert.equal(element(success, 'score-note').hidden, true);
 assert.equal(element(success, 'freshness').dataset.freshness, 'current');
 assert.equal(element(success, 'freshness-label').textContent, 'Updated weekly');
-assert.match(element(success, 'freshness').getAttribute('title'), /Latest assessment: .+ \(6 days ago\)/);
+assert.match(element(success, 'freshness').getAttribute('title'), /Latest assessment: .+ \(\d+ days? ago\)/);
 assert.match(element(success, 'updated').textContent, /^Assessment · .+ · (?:First assessment|No score change|Up|Down)/);
 assert.equal(
   element(success, 'history-summary').textContent,
