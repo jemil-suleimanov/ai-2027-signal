@@ -27,7 +27,7 @@ footer {
   font-family: var(--font-mono);
 }
 
-.feed-link {
+.footer-link {
   color: inherit;
   text-underline-offset: 3px;
 }
