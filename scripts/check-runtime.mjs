@@ -40,7 +40,7 @@ class FakeElement {
   }
 }
 
-async function render(response, hash = '', now = `${publishedUpdates[0].date}T12:00:00Z`) {
+async function render(response, hash = '', now = `${publishedUpdates[0].date}T12:00:00Z`, fetchImpl = async () => response) {
   const updateIds = publishedUpdates.map(update => `update-${update.date}`);
   const elements = new Map([...elementIds, ...updateIds].map(id => [id, new FakeElement()]));
   for (const id of ['score-note', 'tracks', 'history', 'updates']) {
@@ -49,6 +49,8 @@ async function render(response, hash = '', now = `${publishedUpdates[0].date}T12
   elements.get('alignment-meter').setAttribute('aria-valuenow', '0');
 
   const errors = [];
+  const timers = new Map();
+  const requests = [];
   const NativeDate = Date;
   class FixedDate extends NativeDate {
     constructor(...args) {
@@ -67,7 +69,17 @@ async function render(response, hash = '', now = `${publishedUpdates[0].date}T12
         return element;
       }
     },
-    fetch: async () => response,
+    fetch: (...args) => {
+      requests.push(args);
+      return fetchImpl(...args);
+    },
+    AbortController,
+    setTimeout(callback, delay) {
+      const id = timers.size + 1;
+      timers.set(id, { callback, delay });
+      return id;
+    },
+    clearTimeout: id => timers.delete(id),
     location: { hash },
     Date: FixedDate,
     URL
@@ -75,7 +87,7 @@ async function render(response, hash = '', now = `${publishedUpdates[0].date}T12
 
   new Script(appSource, { filename: 'public/assets/app.js' }).runInNewContext(context);
   await new Promise(resolve => setImmediate(resolve));
-  return { elements, errors };
+  return { elements, errors, timers, requests };
 }
 
 function element(result, id) {
@@ -83,6 +95,7 @@ function element(result, id) {
 }
 
 function assertSettled(result) {
+  assert.equal(result.timers.size, 0, 'Settled loads should clear their timeout');
   for (const id of ['score-note', 'tracks', 'history', 'updates']) {
     assert.equal(element(result, id).getAttribute('aria-busy'), 'false', `${id} should finish loading`);
   }
@@ -261,4 +274,31 @@ assert.equal(element(unavailable, 'week-title').textContent, 'Assessment tempora
 assert.match(element(unavailable, 'score-note').textContent, /could not be loaded/);
 assert.match(element(unavailable, 'history').innerHTML, /could not be loaded/);
 
-console.log('Runtime checks passed for success, source provenance and fallback, freshness boundaries, empty, unavailable, hostile, and malformed states');
+// Model Fetch's abort behavior at both asynchronous network boundaries.
+for (const phase of ['response', 'body']) {
+  const stalled = await render(null, '', undefined, async (url, { signal } = {}) => {
+    const pending = () => new Promise((resolve, reject) => {
+      signal?.addEventListener('abort', () => reject(signal.reason), { once: true });
+    });
+    return phase === 'response' ? pending() : { ok: true, status: 200, json: pending };
+  });
+  assert.equal(stalled.errors.length, 0, phase);
+  assert.equal(element(stalled, 'updates').getAttribute('aria-busy'), 'true', phase);
+  assert.equal(stalled.timers.size, 1, phase);
+  const timer = [...stalled.timers.values()][0];
+  assert.equal(timer.delay, 15000, phase);
+  const [url, { signal }] = stalled.requests[0];
+  assert.equal(url, './data/updates.json');
+  assert.equal(signal.aborted, false);
+  timer.callback();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(signal.aborted, true, phase);
+  assertSettled(stalled);
+  assert.equal(stalled.errors.length, 1, phase);
+  assert.equal(element(stalled, 'score').textContent, '—', phase);
+  assert.equal(element(stalled, 'week-title').textContent, 'Assessment temporarily unavailable', phase);
+  assert.equal(element(stalled, 'freshness').dataset.freshness, 'unavailable', phase);
+  assert.match(element(stalled, 'updates').innerHTML, /View published updates/);
+}
+
+console.log('Runtime checks passed for success, source provenance and fallback, freshness boundaries, empty, unavailable, hostile, malformed, and stalled-network states');
