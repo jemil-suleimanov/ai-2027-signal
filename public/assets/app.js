@@ -238,8 +238,11 @@ function renderUpdates(data) {
 }
 
 async function loadUpdates() {
+  const controller = new AbortController();
+  // Bound both the response wait and body download; reuse the honest error state.
+  const timeout = setTimeout(() => controller.abort(), 15000);
   try {
-    const response = await fetch('./data/updates.json');
+    const response = await fetch('./data/updates.json', { signal: controller.signal });
     if (!response.ok) throw new Error(`Updates request failed with ${response.status}`);
 
     const data = await response.json();
@@ -261,6 +264,7 @@ async function loadUpdates() {
       'The latest assessment could not be loaded. Please retry shortly or inspect the published updates in the repository.'
     );
   } finally {
+    clearTimeout(timeout);
     setBusy(false);
   }
 }
