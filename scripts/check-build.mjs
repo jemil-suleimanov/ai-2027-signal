@@ -1,5 +1,8 @@
 import { createHash } from 'node:crypto';
-import { readdir, readFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { promisify } from 'node:util';
 import { join } from 'node:path';
 
 const root = new URL('..', import.meta.url).pathname;
@@ -137,6 +140,35 @@ if (updatesBuffer) {
   } catch {
     fail('data/updates.json is not valid JSON');
   }
+}
+
+// The validator accepts LF and CRLF. Exercise the real builder in isolation to
+// ensure platform line endings cannot change or prevent the published output.
+const fixtureRoot = await mkdtemp(join(tmpdir(), 'ai-2027-format-'));
+try {
+  await mkdir(join(fixtureRoot, 'scripts'));
+  await mkdir(join(fixtureRoot, 'content/updates'), { recursive: true });
+  await cp(join(root, 'public'), join(fixtureRoot, 'public'), { recursive: true });
+  await cp(join(root, 'scripts/build.mjs'), join(fixtureRoot, 'scripts/build.mjs'));
+  await cp(join(root, 'scripts/check.mjs'), join(fixtureRoot, 'scripts/check.mjs'));
+  const fixtureName = (await readdir(join(root, 'content/updates')))
+    .filter(file => /^\d{4}-\d{2}-\d{2}\.md$/.test(file)).sort().at(-1);
+  const lf = (await readFile(join(root, 'content/updates', fixtureName), 'utf8')).replaceAll('\r\n', '\n');
+  const outputs = [];
+  for (const text of [lf, lf.replaceAll('\n', '\r\n')]) {
+    await writeFile(join(fixtureRoot, 'content/updates', fixtureName), text);
+    await promisify(execFile)(process.execPath, [join(fixtureRoot, 'scripts/check.mjs')]);
+    await promisify(execFile)(process.execPath, [join(fixtureRoot, 'scripts/build.mjs')]);
+    outputs.push(await Promise.all(['data/updates.json', 'feed.xml', 'index.html']
+      .map(file => readFile(join(fixtureRoot, 'dist', file), 'utf8'))));
+  }
+  if (outputs[0].some((output, index) => output !== outputs[1][index])) {
+    fail('LF and CRLF content must produce identical JSON, Atom feed, and HTML');
+  }
+} catch (error) {
+  fail(`line-ending build regression: ${error.message}`);
+} finally {
+  await rm(fixtureRoot, { recursive: true, force: true });
 }
 
 if (failures) process.exit(1);
