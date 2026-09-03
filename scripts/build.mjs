@@ -95,6 +95,7 @@ async function versionAssetReferences() {
 }
 
 function parse(text, file) {
+  text = text.replaceAll('\r\n', '\n');
   const match = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
   if (!match) throw new Error(`${file}: missing frontmatter`);
   const meta = Object.fromEntries(match[1].split('\n').filter(Boolean).map(line => {
