@@ -46,6 +46,24 @@ ${entries}
 `;
 }
 
+function buildSitemap(latestUpdate) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${escapeXml(siteUrl)}</loc>
+    <lastmod>${latestUpdate.date}</lastmod>
+  </url>
+</urlset>
+`;
+}
+
+function buildRobotsTxt() {
+  return `User-agent: *
+Allow: /
+Sitemap: ${siteUrl}sitemap.xml
+`;
+}
+
 function buildStructuredData(latestUpdate) {
   return {
     '@context': 'https://schema.org',
@@ -119,4 +137,6 @@ await versionAssetReferences();
 await mkdir(join(dist, 'data'), { recursive:true });
 await writeFile(join(dist, 'data/updates.json'), JSON.stringify(updates, null, 2));
 await writeFile(join(dist, 'feed.xml'), buildAtomFeed(updates));
+await writeFile(join(dist, 'sitemap.xml'), buildSitemap(updates[0]));
+await writeFile(join(dist, 'robots.txt'), buildRobotsTxt());
 console.log(`Built ${updates.length} update(s) into dist/`);
