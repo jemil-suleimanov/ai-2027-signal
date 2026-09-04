@@ -27,6 +27,8 @@ async function read(path) {
 const indexBuffer = await read('index.html');
 const updatesBuffer = await read('data/updates.json');
 const feedBuffer = await read('feed.xml');
+const sitemapBuffer = await read('sitemap.xml');
+const robotsBuffer = await read('robots.txt');
 const resilienceBuffer = await read('assets/resilience.css');
 
 if (indexBuffer) {
@@ -136,6 +138,23 @@ if (updatesBuffer) {
           if (!feed.includes(`#update-${update.date}`)) fail(`feed is missing the ${update.date} assessment link`);
         }
       }
+
+      if (sitemapBuffer) {
+        const sitemap = sitemapBuffer.toString('utf8');
+        if (!sitemap.startsWith('<?xml version="1.0" encoding="UTF-8"?>')) fail('sitemap.xml must declare UTF-8 XML');
+        if (!sitemap.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')) fail('sitemap.xml must use the sitemap protocol namespace');
+        if (!sitemap.includes('<loc>https://jemil-suleimanov.github.io/ai-2027-signal/</loc>')) fail('sitemap.xml must contain the canonical site URL');
+        if (!sitemap.includes(`<lastmod>${updates[0].date}</lastmod>`)) fail('sitemap lastmod must match the latest assessment');
+        if ((sitemap.match(/<url>/g) || []).length !== 1) fail('single-page sitemap must contain exactly one canonical URL');
+        if (sitemap.includes('#update-')) fail('sitemap must not treat document fragments as separate pages');
+      }
+
+      if (robotsBuffer) {
+        const robots = robotsBuffer.toString('utf8');
+        if (robots !== 'User-agent: *\nAllow: /\nSitemap: https://jemil-suleimanov.github.io/ai-2027-signal/sitemap.xml\n') {
+          fail('robots.txt must allow crawling and advertise the canonical sitemap');
+        }
+      }
     }
   } catch {
     fail('data/updates.json is not valid JSON');
@@ -159,11 +178,11 @@ try {
     await writeFile(join(fixtureRoot, 'content/updates', fixtureName), text);
     await promisify(execFile)(process.execPath, [join(fixtureRoot, 'scripts/check.mjs')]);
     await promisify(execFile)(process.execPath, [join(fixtureRoot, 'scripts/build.mjs')]);
-    outputs.push(await Promise.all(['data/updates.json', 'feed.xml', 'index.html']
+    outputs.push(await Promise.all(['data/updates.json', 'feed.xml', 'sitemap.xml', 'robots.txt', 'index.html']
       .map(file => readFile(join(fixtureRoot, 'dist', file), 'utf8'))));
   }
   if (outputs[0].some((output, index) => output !== outputs[1][index])) {
-    fail('LF and CRLF content must produce identical JSON, Atom feed, and HTML');
+    fail('LF and CRLF content must produce identical generated output');
   }
 } catch (error) {
   fail(`line-ending build regression: ${error.message}`);
@@ -172,4 +191,4 @@ try {
 }
 
 if (failures) process.exit(1);
-console.log(`Build checks passed for ${versionedAssets.length} versioned assets, structured metadata, and the Atom feed`);
+console.log(`Build checks passed for ${versionedAssets.length} versioned assets, structured metadata, Atom feed, sitemap, and robots.txt`);
