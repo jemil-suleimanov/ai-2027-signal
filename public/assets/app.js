@@ -180,7 +180,7 @@ function renderUnavailable(title, message) {
     <article class="update">
       <div class="update-meta"><span>Data status</span></div>
       <div><h3>${title}</h3><p>${message}</p>
-        <div class="sources"><a href="${publishedUpdatesUrl}" target="_blank" rel="noreferrer">View published updates ↗</a></div>
+        <div class="sources"><a href="${publishedUpdatesUrl}" target="_blank" rel="noreferrer">View published updates<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></a></div>
       </div>
       <div class="mini-score"><b>—</b><span>unavailable</span></div>
     </article>
@@ -221,7 +221,7 @@ function renderUpdates(data) {
       <div><h3>${escapeHtml(update.title)}</h3>${update.body.split('\n\n').map(p => `<p>${escapeHtml(p)}</p>`).join('')}
         <div class="sources" aria-label="Sources">${update.sources.map(s => {
           const kind = describeSource(s);
-          return `<a href="${escapeHtml(safeSourceUrl(s.url))}" target="_blank" rel="noreferrer"><span class="source-kind">${kind}</span><span>${escapeHtml(s.title)} ↗</span></a>`;
+          return `<a href="${escapeHtml(safeSourceUrl(s.url))}" target="_blank" rel="noreferrer"><span class="source-kind">${kind}</span><span>${escapeHtml(s.title)}<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></span></a>`;
         }).join('')}</div>
       </div>
       <div class="mini-score"><b>${escapeHtml(update.score)}</b><span>${escapeHtml(update.verdict)}</span></div>
