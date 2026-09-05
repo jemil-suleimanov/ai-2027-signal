@@ -141,6 +141,7 @@ assert.equal(
 assert.equal(occurrences(element(success, 'tracks').innerHTML, 'role="progressbar"'), 4);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="update '), publishedUpdates.length);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="source-kind"'), sourceCount);
+assert.equal(occurrences(element(success, 'updates').innerHTML, ' (opens in new tab)'), sourceCount);
 
 // Publisher coverage is editorial metadata, not a prerequisite for publishing.
 // Exercise the taxonomy separately so a new source can use the honest fallback.
@@ -258,6 +259,7 @@ assert.equal(element(empty, 'alignment-meter').getAttribute('aria-valuetext'), '
 assert.equal(element(empty, 'freshness').dataset.freshness, 'unavailable');
 assert.equal(element(empty, 'freshness-label').textContent, 'Update status unavailable');
 assert.match(element(empty, 'updates').innerHTML, /View published updates/);
+assert.match(element(empty, 'updates').innerHTML, /View published updates[\s\S]*\(opens in new tab\)/);
 
 const unavailable = await render({
   ok: false,
@@ -299,6 +301,7 @@ for (const phase of ['response', 'body']) {
   assert.equal(element(stalled, 'week-title').textContent, 'Assessment temporarily unavailable', phase);
   assert.equal(element(stalled, 'freshness').dataset.freshness, 'unavailable', phase);
   assert.match(element(stalled, 'updates').innerHTML, /View published updates/);
+  assert.match(element(stalled, 'updates').innerHTML, /View published updates[\s\S]*\(opens in new tab\)/);
 }
 
 console.log('Runtime checks passed for success, source provenance and fallback, freshness boundaries, empty, unavailable, hostile, malformed, and stalled-network states');
