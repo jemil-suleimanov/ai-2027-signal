@@ -60,15 +60,17 @@ function validateSources(value, file) {
       continue;
     }
 
+    let normalizedUrl = '';
     try {
       const url = new URL(rawUrl);
       if (!['http:', 'https:'].includes(url.protocol)) fail(file, `unsupported source URL protocol: ${rawUrl}`);
+      else normalizedUrl = url.href;
     } catch {
       fail(file, `invalid source URL: ${rawUrl}`);
     }
 
-    if (seenUrls.has(rawUrl)) fail(file, `duplicate source URL: ${rawUrl}`);
-    seenUrls.add(rawUrl);
+    if (normalizedUrl && seenUrls.has(normalizedUrl)) fail(file, `duplicate source URL: ${rawUrl}`);
+    if (normalizedUrl) seenUrls.add(normalizedUrl);
   }
 }
 

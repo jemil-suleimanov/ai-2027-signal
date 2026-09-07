@@ -63,11 +63,15 @@ function hasValidShape(data) {
     if (!isRealDate(update.date) || dates.has(update.date)) return false;
     if (index && data[index - 1].date <= update.date) return false;
     if (!verdicts.has(update.verdict) || !confidenceLevels.has(update.confidence)) return false;
+    const sourceUrls = new Set();
     if (!Array.isArray(update.sources) || !update.sources.every(source => {
       if (!source || typeof source !== 'object' || Array.isArray(source)) return false;
       if (typeof source.title !== 'string' || !source.title.trim() || typeof source.url !== 'string') return false;
       try {
-        return ['http:', 'https:'].includes(new URL(source.url).protocol);
+        const url = new URL(source.url);
+        if (!['http:', 'https:'].includes(url.protocol) || sourceUrls.has(url.href)) return false;
+        sourceUrls.add(url.href);
+        return true;
       } catch {
         return false;
       }
