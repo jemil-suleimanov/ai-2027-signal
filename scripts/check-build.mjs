@@ -185,6 +185,22 @@ try {
   if (outputs[0].some((output, index) => output !== outputs[1][index])) {
     fail('LF and CRLF content must produce identical generated output');
   }
+
+  const sourceLine = lf.match(/^sources:\s*(.+)$/m)?.[1] || '';
+  const firstSource = sourceLine.split(';')[0];
+  const firstSourceUrl = firstSource.slice(firstSource.lastIndexOf('|') + 1);
+  const firstHost = new URL(firstSourceUrl).hostname;
+  const equivalentUrl = firstSourceUrl.replace(firstHost, firstHost.toUpperCase());
+  const duplicateSource = lf.replace(/^sources:\s*(.+)$/m, `$&;Equivalent duplicate|${equivalentUrl}`);
+  await writeFile(join(fixtureRoot, 'content/updates', fixtureName), duplicateSource);
+  try {
+    await promisify(execFile)(process.execPath, [join(fixtureRoot, 'scripts/check.mjs')]);
+    fail('content validation must reject canonically equivalent source URLs');
+  } catch (error) {
+    if (!String(error.stderr).includes('duplicate source URL')) {
+      fail(`equivalent source regression failed unexpectedly: ${error.message}`);
+    }
+  }
 } catch (error) {
   fail(`line-ending build regression: ${error.message}`);
 } finally {
