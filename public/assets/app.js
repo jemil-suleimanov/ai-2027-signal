@@ -64,7 +64,7 @@ function hasValidShape(data) {
     if (index && data[index - 1].date <= update.date) return false;
     if (!verdicts.has(update.verdict) || !confidenceLevels.has(update.confidence)) return false;
     const sourceUrls = new Set();
-    if (!Array.isArray(update.sources) || !update.sources.every(source => {
+    if (!Array.isArray(update.sources) || !update.sources.length || !update.sources.every(source => {
       if (!source || typeof source !== 'object' || Array.isArray(source)) return false;
       if (typeof source.title !== 'string' || !source.title.trim() || typeof source.url !== 'string') return false;
       try {
