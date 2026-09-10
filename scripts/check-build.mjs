@@ -201,6 +201,17 @@ try {
       fail(`equivalent source regression failed unexpectedly: ${error.message}`);
     }
   }
+
+  const credentialSource = lf.replace(firstSourceUrl, 'https://editor:secret@example.com/evidence');
+  await writeFile(join(fixtureRoot, 'content/updates', fixtureName), credentialSource);
+  try {
+    await promisify(execFile)(process.execPath, [join(fixtureRoot, 'scripts/check.mjs')]);
+    fail('content validation must reject source URLs containing credentials');
+  } catch (error) {
+    if (!String(error.stderr).includes('source URL must not contain credentials')) {
+      fail(`credential source regression failed unexpectedly: ${error.message}`);
+    }
+  }
 } catch (error) {
   fail(`line-ending build regression: ${error.message}`);
 } finally {
