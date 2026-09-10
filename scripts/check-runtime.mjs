@@ -217,6 +217,7 @@ for (const mutate of [
   updates => { updates[0].date = '2026-02-30'; },
   updates => { updates[0].sources = []; },
   updates => { updates[0].sources[0].url = 'javascript:alert(1)'; },
+  updates => { updates[0].sources[0].url = 'https://editor:secret@example.com/evidence'; },
   updates => { updates[0].sources.push({ title: 'Duplicate scenario source', url: 'https://ai-2027.com' }); },
   updates => { updates[1].date = updates[0].date; }
 ]) {
