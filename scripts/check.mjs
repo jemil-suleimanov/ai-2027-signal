@@ -64,6 +64,7 @@ function validateSources(value, file) {
     try {
       const url = new URL(rawUrl);
       if (!['http:', 'https:'].includes(url.protocol)) fail(file, `unsupported source URL protocol: ${rawUrl}`);
+      else if (url.username || url.password) fail(file, `source URL must not contain credentials: ${rawUrl}`);
       else normalizedUrl = url.href;
     } catch {
       fail(file, `invalid source URL: ${rawUrl}`);
