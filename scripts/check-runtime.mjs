@@ -215,6 +215,7 @@ assert.match(escapedUpdatesHtml, /href="https:\/\/example\.com\/evidence"/);
 for (const mutate of [
   updates => { updates[0].score = 101; },
   updates => { updates[0].date = '2026-02-30'; },
+  updates => { updates[0].date = '9999-12-31'; },
   updates => { updates[0].sources = []; },
   updates => { updates[0].sources[0].url = 'javascript:alert(1)'; },
   updates => { updates[0].sources[0].url = 'https://editor:secret@example.com/evidence'; },

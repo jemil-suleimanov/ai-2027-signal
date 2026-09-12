@@ -5,6 +5,7 @@ const required = ['date','title','score','verdict','confidence','capabilities','
 const scoreFields = ['score','capabilities','automation','compute','geopolitics'];
 const verdicts = new Set(['materially behind','behind','near','ahead','materially ahead']);
 const confidenceLevels = new Set(['low','medium','high']);
+const today = new Date().toISOString().slice(0, 10);
 let failures = 0;
 
 function fail(file, message) {
@@ -98,6 +99,7 @@ for (const file of files) {
 
   if (meta.date) {
     if (!isRealDate(meta.date)) fail(file, `invalid date: ${meta.date}`);
+    else if (meta.date > today) fail(file, `date must not be in the future: ${meta.date}`);
     if (file !== `${meta.date}.md`) fail(file, `filename must match date (${meta.date}.md)`);
     if (seenDates.has(meta.date)) fail(file, `duplicate update date: ${meta.date}`);
     seenDates.add(meta.date);
