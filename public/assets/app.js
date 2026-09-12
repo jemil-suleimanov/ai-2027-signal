@@ -54,13 +54,14 @@ function isRealDate(value) {
 function hasValidShape(data) {
   if (!Array.isArray(data)) return false;
 
+  const today = new Date().toISOString().slice(0, 10);
   const dates = new Set();
   return data.every((update, index) => {
     if (!update || typeof update !== 'object' || Array.isArray(update)) return false;
     if (!updateFields.every(field => field in update)) return false;
     if (!textFields.every(field => typeof update[field] === 'string' && update[field].trim())) return false;
     if (!scoreFields.every(field => Number.isInteger(update[field]) && update[field] >= 0 && update[field] <= 100)) return false;
-    if (!isRealDate(update.date) || dates.has(update.date)) return false;
+    if (!isRealDate(update.date) || update.date > today || dates.has(update.date)) return false;
     if (index && data[index - 1].date <= update.date) return false;
     if (!verdicts.has(update.verdict) || !confidenceLevels.has(update.confidence)) return false;
     const sourceUrls = new Set();

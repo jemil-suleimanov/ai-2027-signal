@@ -217,6 +217,20 @@ try {
       fail(`credential source regression failed unexpectedly: ${error.message}`);
     }
   }
+
+  const futureDate = '9999-12-31';
+  const futureName = `${futureDate}.md`;
+  const futureUpdate = lf.replace(/^date:\s*\d{4}-\d{2}-\d{2}$/m, `date: ${futureDate}`);
+  await rm(join(fixtureRoot, 'content/updates', fixtureName), { force: true });
+  await writeFile(join(fixtureRoot, 'content/updates', futureName), futureUpdate);
+  try {
+    await promisify(execFile)(process.execPath, [join(fixtureRoot, 'scripts/check.mjs')]);
+    fail('content validation must reject future-dated updates');
+  } catch (error) {
+    if (!String(error.stderr).includes('date must not be in the future')) {
+      fail(`future date regression failed unexpectedly: ${error.message}`);
+    }
+  }
 } catch (error) {
   fail(`line-ending build regression: ${error.message}`);
 } finally {
