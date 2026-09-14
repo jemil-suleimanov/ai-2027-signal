@@ -8,6 +8,7 @@ const freshnessGraceDays = 10;
 const publishedUpdatesUrl = 'https://github.com/jemil-suleimanov/ai-2027-signal/tree/main/content/updates';
 const sourceHosts = {
   'Scenario reference': new Set(['ai-2027.com', 'lesswrong.com']),
+  'Government source': new Set(['cisa.gov']),
   'Independent research': new Set(['artificialanalysis.ai', 'arcprize.org', 'epoch.ai', 'metr.org', 'transluce.org']),
   'News reporting': new Set(['apnews.com', 'reuters.com']),
   'Research paper': new Set(['arxiv.org']),

@@ -147,11 +147,13 @@ assert.equal(occurrences(element(success, 'updates').innerHTML, ' (opens in new 
 // Exercise the taxonomy separately so a new source can use the honest fallback.
 for (const [url, expectedKind] of [
   ['https://ai-2027.com/', 'Scenario reference'],
+  ['https://www.cisa.gov/news-events/cybersecurity-advisories/example', 'Government source'],
   ['https://metr.org/time-horizons/', 'Independent research'],
   ['https://www.reuters.com/technology/', 'News reporting'],
   ['https://arxiv.org/abs/example', 'Research paper'],
   ['https://www.anthropic.com/news/example', 'First-party'],
   ['https://example.org/new-publisher', 'Other source'],
+  ['https://cisa.gov.example.org/advisory', 'Other source'],
   ['https://reuters.com.example.org/report', 'Other source'],
   ['https://example.org/reuters.com', 'Other source']
 ]) {
