@@ -27,7 +27,7 @@ function escapeHtml(value) {
 function safeSourceUrl(value) {
   try {
     const url = new URL(value);
-    return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password ? url.href : publishedUpdatesUrl;
+    return url.protocol === 'https:' && !url.username && !url.password ? url.href : publishedUpdatesUrl;
   } catch {
     return publishedUpdatesUrl;
   }
@@ -71,7 +71,7 @@ function hasValidShape(data) {
       if (typeof source.title !== 'string' || !source.title.trim() || typeof source.url !== 'string') return false;
       try {
         const url = new URL(source.url);
-        if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || sourceUrls.has(url.href)) return false;
+        if (url.protocol !== 'https:' || url.username || url.password || sourceUrls.has(url.href)) return false;
         sourceUrls.add(url.href);
         return true;
       } catch {

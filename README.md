@@ -16,6 +16,7 @@ npm run build
 ```
 
 Commit to `main`. GitHub Actions validates, builds, and deploys the site to GitHub Pages.
+Evidence URLs must use HTTPS and must not contain embedded credentials.
 
 ## Score rubric
 
