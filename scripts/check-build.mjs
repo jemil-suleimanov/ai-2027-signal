@@ -218,6 +218,17 @@ try {
     }
   }
 
+  const insecureSource = lf.replace(firstSourceUrl, 'http://example.com/evidence');
+  await writeFile(join(fixtureRoot, 'content/updates', fixtureName), insecureSource);
+  try {
+    await promisify(execFile)(process.execPath, [join(fixtureRoot, 'scripts/check.mjs')]);
+    fail('content validation must reject source URLs without HTTPS');
+  } catch (error) {
+    if (!String(error.stderr).includes('source URL must use HTTPS')) {
+      fail(`insecure source regression failed unexpectedly: ${error.message}`);
+    }
+  }
+
   const futureDate = '9999-12-31';
   const futureName = `${futureDate}.md`;
   const futureUpdate = lf.replace(/^date:\s*\d{4}-\d{2}-\d{2}$/m, `date: ${futureDate}`);
