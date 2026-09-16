@@ -244,6 +244,9 @@ function renderUpdates(data) {
 }
 
 async function loadUpdates() {
+  // Generated HTML contains the latest published fallback. Mark it busy only
+  // once enhancement starts so the no-JavaScript state remains truthful.
+  setBusy(true);
   const controller = new AbortController();
   // Bound both the response wait and body download; reuse the honest error state.
   const timeout = setTimeout(() => controller.abort(), 15000);
