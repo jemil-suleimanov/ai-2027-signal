@@ -17,6 +17,83 @@ function escapeXml(value) {
     .replaceAll("'", '&apos;');
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function formatAssessmentDate(date) {
+  return new Date(`${date}T12:00:00Z`).toLocaleDateString('en-GB', {
+    day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC'
+  });
+}
+
+function describeScoreChange(updates) {
+  if (updates.length < 2) return 'First assessment';
+
+  const delta = updates[0].score - updates[1].score;
+  const previousDate = formatAssessmentDate(updates[1].date);
+  if (delta === 0) return `No score change vs ${previousDate}`;
+
+  const points = Math.abs(delta);
+  return `${delta > 0 ? 'Up' : 'Down'} ${points} ${points === 1 ? 'point' : 'points'} vs ${previousDate}`;
+}
+
+function replaceOnce(html, before, after) {
+  if (!html.includes(before)) throw new Error(`index.html: missing fallback marker: ${before}`);
+  return html.replace(before, after);
+}
+
+async function injectStaticFallback(updates) {
+  const indexPath = join(dist, 'index.html');
+  const latest = updates[0];
+  const archiveUrl = 'https://github.com/jemil-suleimanov/ai-2027-signal/tree/main/content/updates';
+  const latestUrl = `https://github.com/jemil-suleimanov/ai-2027-signal/blob/main/content/updates/${latest.date}.md`;
+  const trackNames = {
+    capabilities: 'Model capabilities',
+    automation: 'AI R&D automation',
+    compute: 'Compute scale-up',
+    geopolitics: 'Race dynamics'
+  };
+  let html = await readFile(indexPath, 'utf8');
+
+  const replacements = [
+    ['<span id="freshness-label" role="status" aria-live="polite">Checking update status</span>', `<span id="freshness-label" role="status" aria-live="polite">Assessment dated ${escapeHtml(formatAssessmentDate(latest.date))}</span>`],
+    ['<span id="score">—</span>', `<span id="score">${escapeHtml(latest.score)}</span>`],
+    ['<span id="verdict" class="pill">Loading</span>', `<span id="verdict" class="pill" data-verdict="${escapeHtml(latest.verdict)}">${escapeHtml(latest.verdict)}</span>`],
+    ['<span id="confidence"></span>', `<span id="confidence">Evidence confidence: ${escapeHtml(latest.confidence)}</span>`],
+    ['aria-valuemax="100" aria-valuetext="Loading"', `aria-valuemax="100" aria-valuenow="${escapeHtml(latest.score)}" aria-valuetext="${escapeHtml(latest.score)} out of 100 — ${escapeHtml(latest.verdict)}"`],
+    ['<i id="meter"></i>', `<i id="meter" style="width:${escapeHtml(latest.score)}%"></i>`],
+    ['<p id="score-note" role="status" aria-live="polite" aria-atomic="true" aria-busy="true">Loading the latest weekly assessment…</p>', `<p id="score-note" role="status" aria-live="polite" aria-atomic="true" aria-busy="false">Latest published summary; <a href="${latestUrl}">inspect this assessment in the public archive</a>.</p>`],
+    ['<h2 id="week-title"></h2>', `<h2 id="week-title">${escapeHtml(latest.title)}</h2>`],
+    ['<div class="model-callout"><span id="model"></span><p id="model-note"></p></div>', `<div class="model-callout"><span id="model">${escapeHtml(latest.model)}</span><p id="model-note">${escapeHtml(latest.model_note)}</p></div>`],
+    ['<span id="updated" class="date"></span>', `<span id="updated" class="date">Assessment · ${escapeHtml(formatAssessmentDate(latest.date))} · ${escapeHtml(describeScoreChange(updates))}</span>`],
+    ['<div class="marker scenario-marker"><span>Scenario</span><b id="scenario-marker"></b><small id="scenario-date"></small></div>', `<div class="marker scenario-marker"><span>Scenario</span><b id="scenario-marker">${escapeHtml(latest.scenario_marker)}</b><small id="scenario-date">${escapeHtml(latest.scenario_date)}</small></div>`],
+    ['<div class="marker reality-marker"><span>Observed</span><b id="reality-marker"></b><small>as of latest update</small></div>', `<div class="marker reality-marker"><span>Observed</span><b id="reality-marker">${escapeHtml(latest.reality_marker)}</b><small>as of latest update</small></div>`],
+    ['<div id="tracks" class="tracks" aria-live="polite" aria-busy="true"></div>', `<div id="tracks" class="tracks" aria-live="polite" aria-busy="false">${Object.entries(trackNames).map(([key, label]) => `
+          <div class="track"><div><span>${label}</span><b>${escapeHtml(latest[key])}</b></div><div class="track-meter" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${escapeHtml(latest[key])}" aria-valuetext="${escapeHtml(latest[key])} out of 100"><i style="width:${escapeHtml(latest[key])}%"></i></div></div>`).join('')}
+        </div>`],
+    ['<p id="history-summary">Loading assessment history…</p>', `<p id="history-summary">${updates.length} published assessments · ${escapeHtml(updates.at(-1).score)} → ${escapeHtml(latest.score)}</p>`],
+    ['<div id="history" aria-live="polite" aria-busy="true"></div>', `<div id="history" aria-live="polite" aria-busy="false"><p class="history-note">The interactive chart requires JavaScript. <a href="${archiveUrl}">Browse all published assessments</a>.</p></div>`],
+    ['<div id="updates" class="updates" aria-live="polite" aria-busy="true"></div>', `<div id="updates" class="updates" aria-live="polite" aria-busy="false">
+          <article id="update-${escapeHtml(latest.date)}" class="update latest">
+            <div class="update-meta"><time datetime="${escapeHtml(latest.date)}">${escapeHtml(latest.date)}</time><span>Latest signal</span></div>
+            <div><h3>${escapeHtml(latest.title)}</h3>${latest.body.split('\n\n').map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join('')}
+              <div class="sources" aria-label="Sources">${latest.sources.map(source => `<a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer"><span>${escapeHtml(source.title)}<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></span></a>`).join('')}</div>
+            </div>
+            <div class="mini-score"><b>${escapeHtml(latest.score)}</b><span>${escapeHtml(latest.verdict)}</span></div>
+          </article>
+        </div>`]
+  ];
+
+  for (const [before, after] of replacements) html = replaceOnce(html, before, after);
+  await writeFile(indexPath, html);
+}
+
 function buildAtomFeed(updates) {
   const entries = updates.map(update => {
     const entryUrl = `${siteUrl}#update-${update.date}`;
@@ -133,6 +210,7 @@ await rm(dist, { recursive:true, force:true });
 await mkdir(dist, { recursive:true });
 await cp(join(root, 'public'), dist, { recursive:true });
 await injectStructuredData(updates[0]);
+await injectStaticFallback(updates);
 await versionAssetReferences();
 await mkdir(join(dist, 'data'), { recursive:true });
 await writeFile(join(dist, 'data/updates.json'), JSON.stringify(updates, null, 2));

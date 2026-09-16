@@ -82,7 +82,7 @@ if (indexBuffer) {
     '<main id="main-content" tabindex="-1">',
     '<nav aria-label="Primary navigation">',
     '<div id="freshness" class="eyebrow" data-freshness="unknown">',
-    '<span id="freshness-label" role="status" aria-live="polite">Checking update status</span>',
+    '<span id="freshness-label" role="status" aria-live="polite">',
     '<a class="source-link" href="https://ai-2027.com/" target="_blank" rel="noreferrer">Read the scenario<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></a>',
     '<a class="footer-link" href="https://github.com/jemil-suleimanov/ai-2027-signal" target="_blank" rel="noreferrer">Source on GitHub<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></a>',
     'public assessment archive · <a class="footer-link" href="feed.xml">Subscribe via RSS / Atom ↗</a>',
@@ -116,6 +116,25 @@ if (updatesBuffer) {
       if (dates.some((date, index) => date !== sortedDates[index])) fail('updates must be newest first');
       if (updates.some(update => !Array.isArray(update.sources) || !update.sources.length)) {
         fail('every generated update must retain at least one source');
+      }
+
+      if (indexBuffer) {
+        const html = indexBuffer.toString('utf8');
+        const latest = updates[0];
+        for (const fallback of [
+          `<span id="score">${latest.score}</span>`,
+          `<span id="verdict" class="pill" data-verdict="${latest.verdict}">${latest.verdict}</span>`,
+          '<span id="freshness-label" role="status" aria-live="polite">Assessment dated ',
+          `aria-valuenow="${latest.score}" aria-valuetext="${latest.score} out of 100 — ${latest.verdict}"`,
+          `id="update-${latest.date}" class="update latest"`,
+          'Latest published summary;',
+          'aria-live="polite" aria-busy="false"'
+        ]) {
+          if (!html.includes(fallback)) fail(`generated HTML is missing static fallback: ${fallback}`);
+        }
+        if (html.includes('Loading the latest weekly assessment…')) {
+          fail('generated HTML must not leave the latest assessment in a loading state');
+        }
       }
 
       if (indexBuffer) {
