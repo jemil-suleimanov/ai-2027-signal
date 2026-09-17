@@ -210,6 +210,18 @@ try {
     fail('LF and CRLF content must produce identical generated output');
   }
 
+  const hostileMarkup = '<img src=x onerror=alert(1)>';
+  const hostileUpdate = lf.replace(/^title:\s*(.+)$/m, `title: ${hostileMarkup}`);
+  await writeFile(join(fixtureRoot, 'content/updates', fixtureName), hostileUpdate);
+  await promisify(execFile)(process.execPath, [join(fixtureRoot, 'scripts/build.mjs')]);
+  const hostileHtml = await readFile(join(fixtureRoot, 'dist/index.html'), 'utf8');
+  if (hostileHtml.includes(hostileMarkup)) {
+    fail('static fallback must not render editorial text as HTML');
+  }
+  if (!hostileHtml.includes('&lt;img src=x onerror=alert(1)&gt;')) {
+    fail('static fallback must retain escaped editorial text');
+  }
+
   const sourceLine = lf.match(/^sources:\s*(.+)$/m)?.[1] || '';
   const firstSource = sourceLine.split(';')[0];
   const firstSourceUrl = firstSource.slice(firstSource.lastIndexOf('|') + 1);
@@ -237,6 +249,16 @@ try {
     }
   }
 
+  await writeFile(join(fixtureRoot, 'content/updates', fixtureName), credentialSource);
+  try {
+    await promisify(execFile)(process.execPath, [join(fixtureRoot, 'scripts/build.mjs')]);
+    fail('static fallback builder must reject source URLs containing credentials');
+  } catch (error) {
+    if (!String(error.stderr).includes('Static fallback source URL must not contain credentials')) {
+      fail(`static fallback credential regression failed unexpectedly: ${error.message}`);
+    }
+  }
+
   const insecureSource = lf.replace(firstSourceUrl, 'http://example.com/evidence');
   await writeFile(join(fixtureRoot, 'content/updates', fixtureName), insecureSource);
   try {
@@ -245,6 +267,16 @@ try {
   } catch (error) {
     if (!String(error.stderr).includes('source URL must use HTTPS')) {
       fail(`insecure source regression failed unexpectedly: ${error.message}`);
+    }
+  }
+
+  await writeFile(join(fixtureRoot, 'content/updates', fixtureName), insecureSource);
+  try {
+    await promisify(execFile)(process.execPath, [join(fixtureRoot, 'scripts/build.mjs')]);
+    fail('static fallback builder must reject source URLs without HTTPS');
+  } catch (error) {
+    if (!String(error.stderr).includes('Static fallback source URL must use HTTPS')) {
+      fail(`static fallback URL regression failed unexpectedly: ${error.message}`);
     }
   }
 
