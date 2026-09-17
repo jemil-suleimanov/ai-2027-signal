@@ -26,6 +26,24 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
+function safeSourceUrl(value) {
+  let url;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error('Static fallback source URL must be a valid HTTPS URL');
+  }
+
+  if (url.protocol !== 'https:') {
+    throw new Error('Static fallback source URL must use HTTPS');
+  }
+  if (url.username || url.password) {
+    throw new Error('Static fallback source URL must not contain credentials');
+  }
+
+  return value;
+}
+
 function formatAssessmentDate(date) {
   return new Date(`${date}T12:00:00Z`).toLocaleDateString('en-GB', {
     day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC'
@@ -83,7 +101,7 @@ async function injectStaticFallback(updates) {
           <article id="update-${escapeHtml(latest.date)}" class="update latest">
             <div class="update-meta"><time datetime="${escapeHtml(latest.date)}">${escapeHtml(latest.date)}</time><span>Latest signal</span></div>
             <div><h3>${escapeHtml(latest.title)}</h3>${latest.body.split('\n\n').map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join('')}
-              <div class="sources" aria-label="Sources">${latest.sources.map(source => `<a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer"><span>${escapeHtml(source.title)}<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></span></a>`).join('')}</div>
+              <div class="sources" aria-label="Sources">${latest.sources.map(source => `<a href="${escapeHtml(safeSourceUrl(source.url))}" target="_blank" rel="noreferrer"><span>${escapeHtml(source.title)}<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></span></a>`).join('')}</div>
             </div>
             <div class="mini-score"><b>${escapeHtml(latest.score)}</b><span>${escapeHtml(latest.verdict)}</span></div>
           </article>
