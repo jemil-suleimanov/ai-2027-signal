@@ -1,6 +1,7 @@
 import { mkdir, readdir, readFile, rm, cp, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
+import { describeSource } from './source-provenance.mjs';
 
 const root = new URL('..', import.meta.url).pathname;
 const contentDir = join(root, 'content/updates');
@@ -101,7 +102,7 @@ async function injectStaticFallback(updates) {
           <article id="update-${escapeHtml(latest.date)}" class="update latest">
             <div class="update-meta"><time datetime="${escapeHtml(latest.date)}">${escapeHtml(latest.date)}</time><span>Latest signal</span></div>
             <div><h3>${escapeHtml(latest.title)}</h3>${latest.body.split('\n\n').map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join('')}
-              <div class="sources" aria-label="Sources">${latest.sources.map(source => `<a href="${escapeHtml(safeSourceUrl(source.url))}" target="_blank" rel="noreferrer"><span>${escapeHtml(source.title)}<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></span></a>`).join('')}</div>
+              <div class="sources" aria-label="Sources">${latest.sources.map(source => `<a href="${escapeHtml(safeSourceUrl(source.url))}" target="_blank" rel="noreferrer"><span class="source-kind">${escapeHtml(source.kind)}</span><span>${escapeHtml(source.title)}<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></span></a>`).join('')}</div>
             </div>
             <div class="mini-score"><b>${escapeHtml(latest.score)}</b><span>${escapeHtml(latest.verdict)}</span></div>
           </article>
@@ -216,7 +217,9 @@ function parse(text, file) {
   }));
   for (const key of ['score','capabilities','automation','compute','geopolitics']) meta[key] = Number(meta[key]);
   meta.sources = (meta.sources || '').split(';').filter(Boolean).map(item => {
-    const i = item.lastIndexOf('|'); return { title:item.slice(0,i), url:item.slice(i+1) };
+    const i = item.lastIndexOf('|');
+    const url = item.slice(i + 1);
+    return { title:item.slice(0, i), url, kind:describeSource(url) };
   });
   return { ...meta, body: match[2].trim() };
 }

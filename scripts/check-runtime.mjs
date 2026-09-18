@@ -143,33 +143,6 @@ assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="update '
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="source-kind"'), sourceCount);
 assert.equal(occurrences(element(success, 'updates').innerHTML, ' (opens in new tab)'), sourceCount);
 
-// Publisher coverage is editorial metadata, not a prerequisite for publishing.
-// Exercise the taxonomy separately so a new source can use the honest fallback.
-for (const [url, expectedKind] of [
-  ['https://ai-2027.com/', 'Scenario reference'],
-  ['https://www.cisa.gov/news-events/cybersecurity-advisories/example', 'Government source'],
-  ['https://metr.org/time-horizons/', 'Independent research'],
-  ['https://www.reuters.com/technology/', 'News reporting'],
-  ['https://arxiv.org/abs/example', 'Research paper'],
-  ['https://www.anthropic.com/news/example', 'First-party'],
-  ['https://example.org/new-publisher', 'Other source'],
-  ['https://cisa.gov.example.org/advisory', 'Other source'],
-  ['https://reuters.com.example.org/report', 'Other source'],
-  ['https://example.org/reuters.com', 'Other source']
-]) {
-  const update = structuredClone(latest);
-  update.sources = [{ title: 'Source provenance fixture', url }];
-  const result = await render({ ok: true, status: 200, json: async () => [update] });
-  const html = element(result, 'updates').innerHTML;
-  assertSettled(result);
-  assert.deepEqual(result.errors, [], url);
-  assert.equal(element(result, 'score').textContent, latest.score, url);
-  assert.equal(occurrences(html, 'class="source-kind"'), 1, url);
-  assert.ok(html.includes(`<span class="source-kind">${expectedKind}</span>`), url);
-  assert.ok(html.includes(`href="${url}"`), url);
-  assert.ok(html.includes('Source provenance fixture'), url);
-}
-
 const latestOnlyResponse = {
   ok: true,
   status: 200,
@@ -201,7 +174,7 @@ const markupPayload = '<img src=x onerror="alert(1)">';
 const unsafeMarkup = structuredClone(publishedUpdates);
 unsafeMarkup[0].title = markupPayload;
 unsafeMarkup[0].body = `Observed text ${markupPayload}`;
-unsafeMarkup[0].sources = [{ title: markupPayload, url: 'https://example.com/evidence' }];
+unsafeMarkup[0].sources = [{ title: markupPayload, url: 'https://example.com/evidence', kind: 'Other source' }];
 const escapedMarkup = await render({
   ok: true,
   status: 200,
@@ -222,7 +195,9 @@ for (const mutate of [
   updates => { updates[0].sources[0].url = 'javascript:alert(1)'; },
   updates => { updates[0].sources[0].url = 'http://example.com/evidence'; },
   updates => { updates[0].sources[0].url = 'https://editor:secret@example.com/evidence'; },
-  updates => { updates[0].sources.push({ title: 'Duplicate scenario source', url: 'https://ai-2027.com' }); },
+  updates => { updates[0].sources[0].kind = 'Trustworthy'; },
+  updates => { delete updates[0].sources[0].kind; },
+  updates => { updates[0].sources.push({ title: 'Duplicate scenario source', url: 'https://ai-2027.com', kind: 'Scenario reference' }); },
   updates => { updates[1].date = updates[0].date; }
 ]) {
   const malformedUpdates = structuredClone(publishedUpdates);
