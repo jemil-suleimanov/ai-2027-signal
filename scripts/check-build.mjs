@@ -4,6 +4,7 @@ import { execFile } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { promisify } from 'node:util';
 import { join } from 'node:path';
+import { describeSource, sourceKinds } from './source-provenance.mjs';
 
 const root = new URL('..', import.meta.url).pathname;
 const dist = join(root, 'dist');
@@ -117,6 +118,9 @@ if (updatesBuffer) {
       if (updates.some(update => !Array.isArray(update.sources) || !update.sources.length)) {
         fail('every generated update must retain at least one source');
       }
+      if (updates.some(update => update.sources.some(source => !sourceKinds.includes(source.kind)))) {
+        fail('every generated source must have a known provenance label');
+      }
 
       if (indexBuffer) {
         const html = indexBuffer.toString('utf8');
@@ -134,6 +138,10 @@ if (updatesBuffer) {
         }
         if (html.includes('Loading the latest weekly assessment…')) {
           fail('generated HTML must not leave the latest assessment in a loading state');
+        }
+        const fallbackSourceKinds = (html.match(/class="source-kind"/g) || []).length;
+        if (fallbackSourceKinds !== latest.sources.length) {
+          fail('static fallback must label every latest-assessment source');
         }
       }
 
@@ -195,6 +203,7 @@ try {
   await cp(join(root, 'public'), join(fixtureRoot, 'public'), { recursive: true });
   await cp(join(root, 'scripts/build.mjs'), join(fixtureRoot, 'scripts/build.mjs'));
   await cp(join(root, 'scripts/check.mjs'), join(fixtureRoot, 'scripts/check.mjs'));
+  await cp(join(root, 'scripts/source-provenance.mjs'), join(fixtureRoot, 'scripts/source-provenance.mjs'));
   const fixtureName = (await readdir(join(root, 'content/updates')))
     .filter(file => /^\d{4}-\d{2}-\d{2}\.md$/.test(file)).sort().at(-1);
   const lf = (await readFile(join(root, 'content/updates', fixtureName), 'utf8')).replaceAll('\r\n', '\n');
@@ -208,6 +217,23 @@ try {
   }
   if (outputs[0].some((output, index) => output !== outputs[1][index])) {
     fail('LF and CRLF content must produce identical generated output');
+  }
+
+  for (const [url, expectedKind] of [
+    ['https://ai-2027.com/', 'Scenario reference'],
+    ['https://www.cisa.gov/news-events/cybersecurity-advisories/example', 'Government source'],
+    ['https://metr.org/time-horizons/', 'Independent research'],
+    ['https://www.reuters.com/technology/', 'News reporting'],
+    ['https://arxiv.org/abs/example', 'Research paper'],
+    ['https://www.anthropic.com/news/example', 'First-party'],
+    ['https://example.org/new-publisher', 'Other source'],
+    ['https://cisa.gov.example.org/advisory', 'Other source'],
+    ['https://reuters.com.example.org/report', 'Other source'],
+    ['https://example.org/reuters.com', 'Other source']
+  ]) {
+    if (describeSource(url) !== expectedKind) {
+      fail(`source provenance mismatch for ${url}`);
+    }
   }
 
   const hostileMarkup = '<img src=x onerror=alert(1)>';

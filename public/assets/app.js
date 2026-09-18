@@ -4,16 +4,9 @@ const scoreFields = ['score','capabilities','automation','compute','geopolitics'
 const textFields = ['date','title','verdict','confidence','model','model_note','scenario_marker','scenario_date','reality_marker','body'];
 const verdicts = new Set(['materially behind','behind','near','ahead','materially ahead']);
 const confidenceLevels = new Set(['low','medium','high']);
+const sourceKinds = new Set(['Scenario reference','Government source','Independent research','News reporting','Research paper','First-party','Other source']);
 const freshnessGraceDays = 10;
 const publishedUpdatesUrl = 'https://github.com/jemil-suleimanov/ai-2027-signal/tree/main/content/updates';
-const sourceHosts = {
-  'Scenario reference': new Set(['ai-2027.com', 'lesswrong.com']),
-  'Government source': new Set(['cisa.gov']),
-  'Independent research': new Set(['artificialanalysis.ai', 'arcprize.org', 'epoch.ai', 'metr.org', 'transluce.org']),
-  'News reporting': new Set(['apnews.com', 'reuters.com']),
-  'Research paper': new Set(['arxiv.org']),
-  'First-party': new Set(['anthropic.com', 'api-docs.deepseek.com', 'huggingface.co', 'kimi.com', 'news.samsung.com', 'nvidianews.nvidia.com', 'openai.com', 'thinkingmachines.ai'])
-};
 
 function escapeHtml(value) {
   return String(value)
@@ -30,15 +23,6 @@ function safeSourceUrl(value) {
     return url.protocol === 'https:' && !url.username && !url.password ? url.href : publishedUpdatesUrl;
   } catch {
     return publishedUpdatesUrl;
-  }
-}
-
-function describeSource(source) {
-  try {
-    const host = new URL(source.url).hostname.replace(/^www\./, '');
-    return Object.entries(sourceHosts).find(([, hosts]) => hosts.has(host))?.[0] || 'Other source';
-  } catch {
-    return 'Other source';
   }
 }
 
@@ -68,7 +52,7 @@ function hasValidShape(data) {
     const sourceUrls = new Set();
     if (!Array.isArray(update.sources) || !update.sources.length || !update.sources.every(source => {
       if (!source || typeof source !== 'object' || Array.isArray(source)) return false;
-      if (typeof source.title !== 'string' || !source.title.trim() || typeof source.url !== 'string') return false;
+      if (typeof source.title !== 'string' || !source.title.trim() || typeof source.url !== 'string' || !sourceKinds.has(source.kind)) return false;
       try {
         const url = new URL(source.url);
         if (url.protocol !== 'https:' || url.username || url.password || sourceUrls.has(url.href)) return false;
@@ -226,8 +210,7 @@ function renderUpdates(data) {
       <div class="update-meta"><time datetime="${escapeHtml(update.date)}">${escapeHtml(update.date)}</time><span>${index ? 'Archive' : 'Latest signal'}</span></div>
       <div><h3>${escapeHtml(update.title)}</h3>${update.body.split('\n\n').map(p => `<p>${escapeHtml(p)}</p>`).join('')}
         <div class="sources" aria-label="Sources">${update.sources.map(s => {
-          const kind = describeSource(s);
-          return `<a href="${escapeHtml(safeSourceUrl(s.url))}" target="_blank" rel="noreferrer"><span class="source-kind">${kind}</span><span>${escapeHtml(s.title)}<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></span></a>`;
+          return `<a href="${escapeHtml(safeSourceUrl(s.url))}" target="_blank" rel="noreferrer"><span class="source-kind">${escapeHtml(s.kind)}</span><span>${escapeHtml(s.title)}<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></span></a>`;
         }).join('')}</div>
       </div>
       <div class="mini-score"><b>${escapeHtml(update.score)}</b><span>${escapeHtml(update.verdict)}</span></div>
