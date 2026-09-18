@@ -67,6 +67,10 @@ async function render(response, hash = '', now = `${publishedUpdates[0].date}T12
         const element = elements.get(id);
         if (!element) throw new Error(`Unexpected element lookup: ${id}`);
         return element;
+      },
+      querySelector(selector) {
+        assert.equal(selector, 'script[src*="assets/app.js"]');
+        return { src: 'https://example.test/assets/app.js?v=a1b2c3d4e5f6' };
       }
     },
     fetch: (...args) => {
@@ -272,7 +276,7 @@ for (const phase of ['response', 'body']) {
   const timer = [...stalled.timers.values()][0];
   assert.equal(timer.delay, 15000, phase);
   const [url, { signal }] = stalled.requests[0];
-  assert.equal(url, './data/updates.json');
+  assert.equal(url, './data/updates.json?v=a1b2c3d4e5f6');
   assert.equal(signal.aborted, false);
   timer.callback();
   await new Promise(resolve => setImmediate(resolve));

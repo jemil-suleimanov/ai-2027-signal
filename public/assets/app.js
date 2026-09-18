@@ -8,6 +8,12 @@ const sourceKinds = new Set(['Scenario reference','Government source','Independe
 const freshnessGraceDays = 10;
 const publishedUpdatesUrl = 'https://github.com/jemil-suleimanov/ai-2027-signal/tree/main/content/updates';
 
+function versionedUpdatesUrl() {
+  const appScript = document.querySelector?.('script[src*="assets/app.js"]');
+  const version = appScript?.src.match(/[?&]v=([a-f0-9]{12})/)?.[1];
+  return `./data/updates.json${version ? `?v=${version}` : ''}`;
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll('&', '&amp;')
@@ -234,7 +240,7 @@ async function loadUpdates() {
   // Bound both the response wait and body download; reuse the honest error state.
   const timeout = setTimeout(() => controller.abort(), 15000);
   try {
-    const response = await fetch('./data/updates.json', { signal: controller.signal });
+    const response = await fetch(versionedUpdatesUrl(), { signal: controller.signal });
     if (!response.ok) throw new Error(`Updates request failed with ${response.status}`);
 
     const data = await response.json();
