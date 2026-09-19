@@ -9,8 +9,7 @@ const freshnessGraceDays = 10;
 const publishedUpdatesUrl = 'https://github.com/jemil-suleimanov/ai-2027-signal/tree/main/content/updates';
 
 function versionedUpdatesUrl() {
-  const appScript = document.querySelector?.('script[src*="assets/app.js"]');
-  const version = appScript?.src.match(/[?&]v=([a-f0-9]{12})/)?.[1];
+  const version = document.querySelector?.('meta[name="updates-version"]')?.content;
   return `./data/updates.json${version ? `?v=${version}` : ''}`;
 }
 

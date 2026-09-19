@@ -40,6 +40,16 @@ if (indexBuffer) {
     fail('index.html must set exactly one no-referrer policy');
   }
 
+  const updatesVersions = [...html.matchAll(/<meta name="updates-version" content="([a-f0-9]{12})" \/>/g)];
+  if (updatesVersions.length !== 1) {
+    fail('index.html must contain exactly one 12-character assessment-data version');
+  } else if (updatesBuffer) {
+    const expected = createHash('sha256').update(updatesBuffer).digest('hex').slice(0, 12);
+    if (updatesVersions[0][1] !== expected) {
+      fail('assessment-data version must match data/updates.json contents');
+    }
+  }
+
   const structuredDataMatches = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
   if (structuredDataMatches.length !== 1) {
     fail('index.html must contain exactly one JSON-LD block');
