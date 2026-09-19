@@ -191,6 +191,18 @@ async function injectStructuredData(latestUpdate) {
   await writeFile(indexPath, html);
 }
 
+async function injectUpdatesVersion(updatesJson) {
+  const indexPath = join(dist, 'index.html');
+  let html = await readFile(indexPath, 'utf8');
+  const version = createHash('sha256').update(updatesJson).digest('hex').slice(0, 12);
+  html = replaceOnce(
+    html,
+    '<meta name="updates-version" content="" />',
+    `<meta name="updates-version" content="${version}" />`
+  );
+  await writeFile(indexPath, html);
+}
+
 async function versionAssetReferences() {
   const indexPath = join(dist, 'index.html');
   let html = await readFile(indexPath, 'utf8');
@@ -227,14 +239,16 @@ function parse(text, file) {
 const files = (await readdir(contentDir)).filter(f => /^\d{4}-\d{2}-\d{2}\.md$/.test(f));
 const updates = await Promise.all(files.map(async f => parse(await readFile(join(contentDir, f), 'utf8'), f)));
 updates.sort((a,b) => b.date.localeCompare(a.date));
+const updatesJson = JSON.stringify(updates, null, 2);
 await rm(dist, { recursive:true, force:true });
 await mkdir(dist, { recursive:true });
 await cp(join(root, 'public'), dist, { recursive:true });
+await mkdir(join(dist, 'data'), { recursive:true });
+await writeFile(join(dist, 'data/updates.json'), updatesJson);
 await injectStructuredData(updates[0]);
 await injectStaticFallback(updates);
+await injectUpdatesVersion(updatesJson);
 await versionAssetReferences();
-await mkdir(join(dist, 'data'), { recursive:true });
-await writeFile(join(dist, 'data/updates.json'), JSON.stringify(updates, null, 2));
 await writeFile(join(dist, 'feed.xml'), buildAtomFeed(updates));
 await writeFile(join(dist, 'sitemap.xml'), buildSitemap(updates[0]));
 await writeFile(join(dist, 'robots.txt'), buildRobotsTxt());

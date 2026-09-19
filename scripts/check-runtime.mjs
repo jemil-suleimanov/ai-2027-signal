@@ -69,8 +69,8 @@ async function render(response, hash = '', now = `${publishedUpdates[0].date}T12
         return element;
       },
       querySelector(selector) {
-        assert.equal(selector, 'script[src*="assets/app.js"]');
-        return { src: 'https://example.test/assets/app.js?v=a1b2c3d4e5f6' };
+        assert.equal(selector, 'meta[name="updates-version"]');
+        return { content: 'a1b2c3d4e5f6' };
       }
     },
     fetch: (...args) => {
