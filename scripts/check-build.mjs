@@ -100,6 +100,7 @@ if (indexBuffer) {
     'role="progressbar" aria-label="Overall scenario alignment"',
     'aria-labelledby="timeline-heading"',
     'aria-labelledby="evidence-heading"',
+    'Publisher labels describe provenance, not claim truth; the text distinguishes lab-reported claims, independent evidence and editorial inference.',
     'aria-labelledby="method-heading"'
   ]) {
     if (!html.includes(requiredMarkup)) fail(`missing accessibility contract: ${requiredMarkup}`);
