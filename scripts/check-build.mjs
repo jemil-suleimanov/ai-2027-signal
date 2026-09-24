@@ -35,6 +35,10 @@ const resilienceBuffer = await read('assets/resilience.css');
 if (indexBuffer) {
   const html = indexBuffer.toString('utf8');
 
+  for (const fontHost of ['fonts.googleapis.com', 'fonts.gstatic.com']) {
+    if (html.includes(fontHost)) fail(`index.html must not request fonts from ${fontHost}`);
+  }
+
   const referrerPolicies = [...html.matchAll(/<meta name="referrer" content="([^"]+)" \/>/g)];
   if (referrerPolicies.length !== 1 || referrerPolicies[0][1] !== 'no-referrer') {
     fail('index.html must set exactly one no-referrer policy');
