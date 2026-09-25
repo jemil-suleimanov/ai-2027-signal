@@ -39,6 +39,12 @@ if (indexBuffer) {
     if (html.includes(fontHost)) fail(`index.html must not request fonts from ${fontHost}`);
   }
 
+  const expectedContentSecurityPolicy = "default-src 'self'; base-uri 'none'; connect-src 'self'; font-src 'self'; form-action 'none'; frame-src 'none'; img-src 'self' data:; object-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'";
+  const contentSecurityPolicies = [...html.matchAll(/<meta http-equiv="Content-Security-Policy" content="([^"]+)" \/>/g)];
+  if (contentSecurityPolicies.length !== 1 || contentSecurityPolicies[0][1] !== expectedContentSecurityPolicy) {
+    fail('index.html must set exactly one approved Content Security Policy');
+  }
+
   const referrerPolicies = [...html.matchAll(/<meta name="referrer" content="([^"]+)" \/>/g)];
   if (referrerPolicies.length !== 1 || referrerPolicies[0][1] !== 'no-referrer') {
     fail('index.html must set exactly one no-referrer policy');
