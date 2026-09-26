@@ -152,6 +152,8 @@ if (updatesBuffer) {
           '<span id="freshness-label" role="status" aria-live="polite">Assessment dated ',
           `aria-valuenow="${latest.score}" aria-valuetext="${latest.score} out of 100 — ${latest.verdict}"`,
           `id="update-${latest.date}" class="update latest"`,
+          `aria-labelledby="update-title-${latest.date}"`,
+          `<h3 id="update-title-${latest.date}">`,
           'Latest published summary;',
           'aria-live="polite" aria-busy="false"'
         ]) {
