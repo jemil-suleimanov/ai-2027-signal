@@ -144,6 +144,7 @@ assert.equal(
 );
 assert.equal(occurrences(element(success, 'tracks').innerHTML, 'role="progressbar"'), 4);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="update '), publishedUpdates.length);
+assert.equal(occurrences(element(success, 'updates').innerHTML, 'aria-labelledby="update-title-'), publishedUpdates.length);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="source-kind"'), sourceCount);
 assert.equal(occurrences(element(success, 'updates').innerHTML, ' (opens in new tab)'), sourceCount);
 
@@ -216,6 +217,7 @@ for (const mutate of [
   assert.equal(element(malformed, 'score').textContent, '—');
   assert.equal(element(malformed, 'verdict').textContent, 'unavailable');
   assert.equal(element(malformed, 'week-title').textContent, 'Assessment temporarily unavailable');
+  assert.match(element(malformed, 'updates').innerHTML, /aria-labelledby="update-unavailable-title"/);
 }
 
 const requestedDate = publishedUpdates.at(-1).date;
