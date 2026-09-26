@@ -99,9 +99,9 @@ async function injectStaticFallback(updates) {
     ['<p id="history-summary">Loading assessment history…</p>', `<p id="history-summary">${updates.length} published assessments · ${escapeHtml(updates.at(-1).score)} → ${escapeHtml(latest.score)}</p>`],
     ['<div id="history" aria-live="polite" aria-busy="true"></div>', `<div id="history" aria-live="polite" aria-busy="false"><p class="history-note">The interactive chart requires JavaScript. <a href="${archiveUrl}">Browse all published assessments</a>.</p></div>`],
     ['<div id="updates" class="updates" aria-live="polite" aria-busy="true"></div>', `<div id="updates" class="updates" aria-live="polite" aria-busy="false">
-          <article id="update-${escapeHtml(latest.date)}" class="update latest">
+          <article id="update-${escapeHtml(latest.date)}" class="update latest" aria-labelledby="update-title-${escapeHtml(latest.date)}">
             <div class="update-meta"><time datetime="${escapeHtml(latest.date)}">${escapeHtml(latest.date)}</time><span>Latest signal</span></div>
-            <div><h3>${escapeHtml(latest.title)}</h3>${latest.body.split('\n\n').map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join('')}
+            <div><h3 id="update-title-${escapeHtml(latest.date)}">${escapeHtml(latest.title)}</h3>${latest.body.split('\n\n').map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join('')}
               <div class="sources" aria-label="Sources">${latest.sources.map(source => `<a href="${escapeHtml(safeSourceUrl(source.url))}" target="_blank" rel="noreferrer"><span class="source-kind">${escapeHtml(source.kind)}</span><span>${escapeHtml(source.title)}<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></span></a>`).join('')}</div>
             </div>
             <div class="mini-score"><b>${escapeHtml(latest.score)}</b><span>${escapeHtml(latest.verdict)}</span></div>

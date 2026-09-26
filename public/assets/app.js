@@ -172,9 +172,9 @@ function renderUnavailable(title, message) {
   $('history-summary').textContent = 'Assessment history unavailable';
   $('history').innerHTML = '<p class="history-note">Published score history could not be loaded.</p>';
   $('updates').innerHTML = `
-    <article class="update">
+    <article class="update" aria-labelledby="update-unavailable-title">
       <div class="update-meta"><span>Data status</span></div>
-      <div><h3>${title}</h3><p>${message}</p>
+      <div><h3 id="update-unavailable-title">${title}</h3><p>${message}</p>
         <div class="sources"><a href="${publishedUpdatesUrl}" target="_blank" rel="noreferrer">View published updates<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></a></div>
       </div>
       <div class="mini-score"><b>—</b><span>unavailable</span></div>
@@ -211,9 +211,9 @@ function renderUpdates(data) {
   renderHistory(data);
 
   $('updates').innerHTML = data.map((update, index) => `
-    <article id="update-${escapeHtml(update.date)}" class="update ${index ? '' : 'latest'}">
+    <article id="update-${escapeHtml(update.date)}" class="update ${index ? '' : 'latest'}" aria-labelledby="update-title-${escapeHtml(update.date)}">
       <div class="update-meta"><time datetime="${escapeHtml(update.date)}">${escapeHtml(update.date)}</time><span>${index ? 'Archive' : 'Latest signal'}</span></div>
-      <div><h3>${escapeHtml(update.title)}</h3>${update.body.split('\n\n').map(p => `<p>${escapeHtml(p)}</p>`).join('')}
+      <div><h3 id="update-title-${escapeHtml(update.date)}">${escapeHtml(update.title)}</h3>${update.body.split('\n\n').map(p => `<p>${escapeHtml(p)}</p>`).join('')}
         <div class="sources" aria-label="Sources">${update.sources.map(s => {
           return `<a href="${escapeHtml(safeSourceUrl(s.url))}" target="_blank" rel="noreferrer"><span class="source-kind">${escapeHtml(s.kind)}</span><span>${escapeHtml(s.title)}<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></span></a>`;
         }).join('')}</div>
