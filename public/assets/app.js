@@ -142,9 +142,9 @@ function renderHistory(data) {
       `).join('')}
     </svg>
     <ol class="history-values" aria-label="Published scenario alignment scores">
-      ${history.map(update => `<li><time datetime="${escapeHtml(update.date)}">${escapeHtml(formatAssessmentDate(update.date))}</time><b>${escapeHtml(update.score)}/100</b></li>`).join('')}
+      ${history.map(update => `<li><a href="#update-${escapeHtml(update.date)}"><time datetime="${escapeHtml(update.date)}">${escapeHtml(formatAssessmentDate(update.date))}</time><b>${escapeHtml(update.score)}/100</b></a></li>`).join('')}
     </ol>
-    <p class="history-note">Published editorial assessments, shown on the full 0–100 scale. This is a record, not a forecast.</p>
+    <p class="history-note">Published editorial assessments, shown on the full 0–100 scale. This is a record, not a forecast. Choose a date to read its evidence.</p>
   `;
 }
 
