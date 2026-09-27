@@ -148,13 +148,19 @@ footer {
   list-style: none;
 }
 
-.history-values li {
+.history-values a {
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 0;
+  color: inherit;
   font: 10px var(--font-mono);
-  color: var(--muted);
+  text-decoration-color: var(--line);
+  text-underline-offset: 4px;
+}
+
+.history-values a:hover {
+  text-decoration-color: var(--ink);
 }
 
 .history-values b {

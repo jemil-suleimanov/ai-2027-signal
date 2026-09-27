@@ -142,6 +142,11 @@ assert.equal(
   element(success, 'history-summary').textContent,
   `${publishedUpdates.length} published assessments · ${publishedUpdates.at(-1).score} → ${latest.score}`
 );
+assert.equal(occurrences(element(success, 'history').innerHTML, 'href="#update-'), publishedUpdates.length);
+for (const update of publishedUpdates) {
+  assert.match(element(success, 'history').innerHTML, new RegExp(`href="#update-${update.date}"`));
+}
+assert.match(element(success, 'history').innerHTML, /Choose a date to read its evidence\./);
 assert.equal(occurrences(element(success, 'tracks').innerHTML, 'role="progressbar"'), 4);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="update '), publishedUpdates.length);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'aria-labelledby="update-title-'), publishedUpdates.length);
