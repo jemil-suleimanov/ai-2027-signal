@@ -182,6 +182,19 @@ function renderUnavailable(title, message) {
   `;
 }
 
+function focusRequestedUpdate() {
+  let requestedUpdate = '';
+  try {
+    requestedUpdate = decodeURIComponent(location.hash.slice(1));
+  } catch {}
+  if (!/^update-\d{4}-\d{2}-\d{2}$/.test(requestedUpdate)) return;
+
+  const target = document.getElementById(requestedUpdate);
+  if (!target) return;
+  target.focus({ preventScroll: true });
+  target.scrollIntoView();
+}
+
 function renderUpdates(data) {
   const latest = data[0];
 
@@ -211,7 +224,7 @@ function renderUpdates(data) {
   renderHistory(data);
 
   $('updates').innerHTML = data.map((update, index) => `
-    <article id="update-${escapeHtml(update.date)}" class="update ${index ? '' : 'latest'}" aria-labelledby="update-title-${escapeHtml(update.date)}">
+    <article id="update-${escapeHtml(update.date)}" class="update ${index ? '' : 'latest'}" tabindex="-1" aria-labelledby="update-title-${escapeHtml(update.date)}">
       <div class="update-meta"><time datetime="${escapeHtml(update.date)}">${escapeHtml(update.date)}</time><span>${index ? 'Archive' : 'Latest signal'}</span></div>
       <div><h3 id="update-title-${escapeHtml(update.date)}">${escapeHtml(update.title)}</h3>${update.body.split('\n\n').map(p => `<p>${escapeHtml(p)}</p>`).join('')}
         <div class="sources" aria-label="Sources">${update.sources.map(s => {
@@ -222,13 +235,7 @@ function renderUpdates(data) {
     </article>
   `).join('');
 
-  let requestedUpdate = '';
-  try {
-    requestedUpdate = decodeURIComponent(location.hash.slice(1));
-  } catch {}
-  if (/^update-\d{4}-\d{2}-\d{2}$/.test(requestedUpdate)) {
-    document.getElementById(requestedUpdate)?.scrollIntoView();
-  }
+  focusRequestedUpdate();
 }
 
 async function loadUpdates() {
@@ -266,4 +273,5 @@ async function loadUpdates() {
   }
 }
 
+window.addEventListener('hashchange', focusRequestedUpdate);
 void loadUpdates();

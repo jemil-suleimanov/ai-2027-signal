@@ -21,6 +21,7 @@ class FakeElement {
     this.style = {};
     this.textContent = '';
     this.scrolledIntoView = false;
+    this.focused = false;
   }
 
   getAttribute(name) {
@@ -38,6 +39,11 @@ class FakeElement {
   scrollIntoView() {
     this.scrolledIntoView = true;
   }
+
+  focus(options) {
+    assert.equal(options?.preventScroll, true);
+    this.focused = true;
+  }
 }
 
 async function render(response, hash = '', now = `${publishedUpdates[0].date}T12:00:00Z`, fetchImpl = async () => response) {
@@ -51,6 +57,7 @@ async function render(response, hash = '', now = `${publishedUpdates[0].date}T12
   const errors = [];
   const timers = new Map();
   const requests = [];
+  const listeners = new Map();
   const NativeDate = Date;
   class FixedDate extends NativeDate {
     constructor(...args) {
@@ -85,13 +92,18 @@ async function render(response, hash = '', now = `${publishedUpdates[0].date}T12
     },
     clearTimeout: id => timers.delete(id),
     location: { hash },
+    window: {
+      addEventListener(type, listener) {
+        listeners.set(type, listener);
+      }
+    },
     Date: FixedDate,
     URL
   };
 
   new Script(appSource, { filename: 'public/assets/app.js' }).runInNewContext(context);
   await new Promise(resolve => setImmediate(resolve));
-  return { elements, errors, timers, requests };
+  return { elements, errors, timers, requests, listeners, location: context.location };
 }
 
 function element(result, id) {
@@ -150,6 +162,7 @@ assert.match(element(success, 'history').innerHTML, /Choose a date to read its e
 assert.equal(occurrences(element(success, 'tracks').innerHTML, 'role="progressbar"'), 4);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="update '), publishedUpdates.length);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'aria-labelledby="update-title-'), publishedUpdates.length);
+assert.equal(occurrences(element(success, 'updates').innerHTML, 'tabindex="-1"'), publishedUpdates.length);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="source-kind"'), sourceCount);
 assert.equal(occurrences(element(success, 'updates').innerHTML, ' (opens in new tab)'), sourceCount);
 
@@ -232,6 +245,13 @@ const deepLink = await render({
   json: async () => structuredClone(publishedUpdates)
 }, `#update-${requestedDate}`);
 assert.equal(element(deepLink, `update-${requestedDate}`).scrolledIntoView, true);
+assert.equal(element(deepLink, `update-${requestedDate}`).focused, true);
+
+const subsequentDate = publishedUpdates[1].date;
+deepLink.location.hash = `#update-${subsequentDate}`;
+deepLink.listeners.get('hashchange')();
+assert.equal(element(deepLink, `update-${subsequentDate}`).scrolledIntoView, true);
+assert.equal(element(deepLink, `update-${subsequentDate}`).focused, true);
 
 const malformedDeepLink = await render({
   ok: true,
