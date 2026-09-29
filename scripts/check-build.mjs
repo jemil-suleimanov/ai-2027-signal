@@ -249,8 +249,10 @@ try {
     ['https://metr.org/time-horizons/', 'Independent research'],
     ['https://www.reuters.com/technology/', 'News reporting'],
     ['https://arxiv.org/abs/example', 'Research paper'],
+    ['https://www.alibabacloud.com/blog/example', 'First-party'],
     ['https://www.anthropic.com/news/example', 'First-party'],
     ['https://example.org/new-publisher', 'Other source'],
+    ['https://alibabacloud.com.example.org/blog/example', 'Other source'],
     ['https://cisa.gov.example.org/advisory', 'Other source'],
     ['https://reuters.com.example.org/report', 'Other source'],
     ['https://example.org/reuters.com', 'Other source']
