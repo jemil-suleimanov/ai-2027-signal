@@ -164,7 +164,7 @@ if (updatesBuffer) {
           'Latest published summary;',
           '<div id="tracks" class="tracks" aria-busy="false">',
           '<div id="history" aria-busy="false">',
-          '<div id="updates" class="updates" aria-busy="false">''
+          '<div id="updates" class="updates" aria-busy="false">'
         ]) {
           if (!html.includes(fallback)) fail(`generated HTML is missing static fallback: ${fallback}`);
         }
