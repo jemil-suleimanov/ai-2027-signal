@@ -115,6 +115,12 @@ if (indexBuffer) {
   ]) {
     if (!html.includes(requiredMarkup)) fail(`missing accessibility contract: ${requiredMarkup}`);
   }
+
+  for (const id of ['tracks', 'history', 'updates']) {
+    const openingTag = html.match(new RegExp(`<div id="${id}"[^>]*>`))?.[0];
+    if (!openingTag) fail(`missing dynamic content container: ${id}`);
+    else if (openingTag.includes('aria-live=')) fail(`${id} must not announce its complete rendered contents as a live region`);
+  }
 }
 
 if (resilienceBuffer) {
@@ -156,7 +162,9 @@ if (updatesBuffer) {
           `aria-labelledby="update-title-${latest.date}"`,
           `<h3 id="update-title-${latest.date}">`,
           'Latest published summary;',
-          'aria-live="polite" aria-busy="false"'
+          '<div id="tracks" class="tracks" aria-busy="false">',
+          '<div id="history" aria-busy="false">',
+          '<div id="updates" class="updates" aria-busy="false">''
         ]) {
           if (!html.includes(fallback)) fail(`generated HTML is missing static fallback: ${fallback}`);
         }
