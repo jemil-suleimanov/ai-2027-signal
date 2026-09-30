@@ -93,12 +93,12 @@ async function injectStaticFallback(updates) {
     ['<span id="updated" class="date"></span>', `<span id="updated" class="date">Assessment · ${escapeHtml(formatAssessmentDate(latest.date))} · ${escapeHtml(describeScoreChange(updates))}</span>`],
     ['<div class="marker scenario-marker"><span>Scenario</span><b id="scenario-marker"></b><small id="scenario-date"></small></div>', `<div class="marker scenario-marker"><span>Scenario</span><b id="scenario-marker">${escapeHtml(latest.scenario_marker)}</b><small id="scenario-date">${escapeHtml(latest.scenario_date)}</small></div>`],
     ['<div class="marker reality-marker"><span>Observed</span><b id="reality-marker"></b><small>as of latest update</small></div>', `<div class="marker reality-marker"><span>Observed</span><b id="reality-marker">${escapeHtml(latest.reality_marker)}</b><small>as of latest update</small></div>`],
-    ['<div id="tracks" class="tracks" aria-live="polite" aria-busy="true"></div>', `<div id="tracks" class="tracks" aria-live="polite" aria-busy="false">${Object.entries(trackNames).map(([key, label]) => `
+    ['<div id="tracks" class="tracks" aria-busy="true"></div>', `<div id="tracks" class="tracks" aria-busy="false">${Object.entries(trackNames).map(([key, label]) => `
           <div class="track"><div><span>${label}</span><b>${escapeHtml(latest[key])}</b></div><div class="track-meter" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${escapeHtml(latest[key])}" aria-valuetext="${escapeHtml(latest[key])} out of 100"><i style="width:${escapeHtml(latest[key])}%"></i></div></div>`).join('')}
         </div>`],
     ['<p id="history-summary">Loading assessment history…</p>', `<p id="history-summary">${updates.length} published assessments · ${escapeHtml(updates.at(-1).score)} → ${escapeHtml(latest.score)}</p>`],
-    ['<div id="history" aria-live="polite" aria-busy="true"></div>', `<div id="history" aria-live="polite" aria-busy="false"><p class="history-note">The interactive chart requires JavaScript. <a href="${archiveUrl}">Browse all published assessments</a>.</p></div>`],
-    ['<div id="updates" class="updates" aria-live="polite" aria-busy="true"></div>', `<div id="updates" class="updates" aria-live="polite" aria-busy="false">
+    ['<div id="history" aria-busy="true"></div>', `<div id="history" aria-busy="false"><p class="history-note">The interactive chart requires JavaScript. <a href="${archiveUrl}">Browse all published assessments</a>.</p></div>`],
+    ['<div id="updates" class="updates" aria-busy="true"></div>', `<div id="updates" class="updates" aria-busy="false">
           <article id="update-${escapeHtml(latest.date)}" class="update latest" tabindex="-1" aria-labelledby="update-title-${escapeHtml(latest.date)}">
             <div class="update-meta"><time datetime="${escapeHtml(latest.date)}">${escapeHtml(latest.date)}</time><span>Latest signal</span></div>
             <div><h3 id="update-title-${escapeHtml(latest.date)}">${escapeHtml(latest.title)}</h3>${latest.body.split('\n\n').map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join('')}
