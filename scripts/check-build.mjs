@@ -30,7 +30,23 @@ const updatesBuffer = await read('data/updates.json');
 const feedBuffer = await read('feed.xml');
 const sitemapBuffer = await read('sitemap.xml');
 const robotsBuffer = await read('robots.txt');
+const stylesBuffer = await read('assets/styles.css');
 const resilienceBuffer = await read('assets/resilience.css');
+
+function relativeLuminance(hex) {
+  const channels = hex.slice(1).match(/../g).map(value => {
+    const channel = Number.parseInt(value, 16) / 255;
+    return channel <= 0.04045
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function contrastRatio(first, second) {
+  const luminances = [relativeLuminance(first), relativeLuminance(second)].sort((a, b) => b - a);
+  return (luminances[0] + 0.05) / (luminances[1] + 0.05);
+}
 
 if (indexBuffer) {
   const html = indexBuffer.toString('utf8');
@@ -127,6 +143,15 @@ if (resilienceBuffer) {
   const css = resilienceBuffer.toString('utf8');
   if (!css.includes('@media (max-width: 780px)') || !css.includes('.nav nav {\n    display: flex;')) {
     fail('mobile primary navigation must remain visible');
+  }
+
+  const baseCss = stylesBuffer?.toString('utf8') ?? '';
+  const paper = baseCss.match(/--paper:(#[0-9a-f]{6})/i)?.[1];
+  const muted = css.match(/--muted:\s*(#[0-9a-f]{6})/i)?.[1];
+  if (!paper || !muted) {
+    fail('paper and muted color tokens must remain explicit six-digit hex values');
+  } else if (contrastRatio(paper, muted) < 4.5) {
+    fail('muted text must meet WCAG AA 4.5:1 contrast against the paper background');
   }
 }
 
