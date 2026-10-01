@@ -1,4 +1,5 @@
 :root {
+  --muted: #646d65;
   --font-sans: Manrope, "Avenir Next", Avenir, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
