@@ -173,6 +173,36 @@ footer {
   margin: 18px 0 0;
 }
 
+.timeline-card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  min-height: 0;
+  padding: 0;
+  background: var(--line);
+  overflow: visible;
+}
+
+.marker {
+  position: relative;
+  top: auto;
+  left: auto;
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 8px 18px;
+  padding: 30px;
+  background: var(--paper);
+}
+
+.marker small {
+  grid-column: 2;
+}
+
+.scenario-marker::before,
+.reality-marker::before {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -189,6 +219,19 @@ footer {
 }
 
 @media (max-width: 780px) {
+  .timeline-card {
+    grid-template-columns: 1fr;
+  }
+
+  .marker {
+    right: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .marker small {
+    grid-column: 1;
+  }
+
   .nav {
     height: auto;
     min-height: 84px;

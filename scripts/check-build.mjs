@@ -125,11 +125,19 @@ if (indexBuffer) {
     'public assessment archive · <a class="footer-link" href="feed.xml">Subscribe via RSS / Atom ↗</a>',
     'role="progressbar" aria-label="Overall scenario alignment"',
     'aria-labelledby="timeline-heading"',
+    '<div class="timeline-card" role="group" aria-label="Scenario milestone compared with observed evidence">',
+    'The dated scenario milestone and the latest public evidence, side by side. Scores express editorial alignment, not probability.',
     'aria-labelledby="evidence-heading"',
     'Publisher labels describe provenance, not claim truth; the text distinguishes lab-reported claims, independent evidence and editorial inference.',
     'aria-labelledby="method-heading"'
   ]) {
     if (!html.includes(requiredMarkup)) fail(`missing accessibility contract: ${requiredMarkup}`);
+  }
+
+  for (const misleadingTimelineMarkup of ['The horizontal gap is the story.', 'class="time-axis"', 'class="timeline-line"']) {
+    if (html.includes(misleadingTimelineMarkup)) {
+      fail(`comparison must not imply a calculated time position: ${misleadingTimelineMarkup}`);
+    }
   }
 
   for (const id of ['tracks', 'history', 'updates']) {
