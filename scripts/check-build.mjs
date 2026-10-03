@@ -140,6 +140,12 @@ if (indexBuffer) {
     }
   }
 
+  for (const unsupportedScoreReference of ['class="scenario-tick"', 'Scenario pace']) {
+    if (html.includes(unsupportedScoreReference)) {
+      fail(`score meter must not imply an undocumented reference threshold: ${unsupportedScoreReference}`);
+    }
+  }
+
   for (const id of ['tracks', 'history', 'updates']) {
     const openingTag = html.match(new RegExp(`<div id="${id}"[^>]*>`))?.[0];
     if (!openingTag) fail(`missing dynamic content container: ${id}`);
