@@ -10,11 +10,11 @@ export const sourceKinds = [
 
 const sourceHosts = {
   'Scenario reference': new Set(['ai-2027.com', 'lesswrong.com']),
-  'Government source': new Set(['cisa.gov']),
+  'Government source': new Set(['cisa.gov', 'nist.gov']),
   'Independent research': new Set(['artificialanalysis.ai', 'arcprize.org', 'epoch.ai', 'metr.org', 'transluce.org']),
   'News reporting': new Set(['apnews.com', 'reuters.com']),
   'Research paper': new Set(['arxiv.org']),
-  'First-party': new Set(['alibabacloud.com', 'anthropic.com', 'api-docs.deepseek.com', 'huggingface.co', 'kimi.com', 'news.samsung.com', 'nvidianews.nvidia.com', 'openai.com', 'thinkingmachines.ai'])
+  'First-party': new Set(['alibabacloud.com', 'anthropic.com', 'api-docs.deepseek.com', 'blog.google', 'deploymentsafety.openai.com', 'huggingface.co', 'kimi.com', 'news.samsung.com', 'nvidianews.nvidia.com', 'openai.com', 'thinkingmachines.ai'])
 };
 
 export function describeSource(url) {
