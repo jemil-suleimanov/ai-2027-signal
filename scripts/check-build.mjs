@@ -293,14 +293,20 @@ try {
   for (const [url, expectedKind] of [
     ['https://ai-2027.com/', 'Scenario reference'],
     ['https://www.cisa.gov/news-events/cybersecurity-advisories/example', 'Government source'],
+    ['https://www.nist.gov/news-events/news/example', 'Government source'],
     ['https://metr.org/time-horizons/', 'Independent research'],
     ['https://www.reuters.com/technology/', 'News reporting'],
     ['https://arxiv.org/abs/example', 'Research paper'],
     ['https://www.alibabacloud.com/blog/example', 'First-party'],
     ['https://www.anthropic.com/news/example', 'First-party'],
+    ['https://blog.google/innovation-and-ai/example', 'First-party'],
+    ['https://deploymentsafety.openai.com/example', 'First-party'],
     ['https://example.org/new-publisher', 'Other source'],
     ['https://alibabacloud.com.example.org/blog/example', 'Other source'],
     ['https://cisa.gov.example.org/advisory', 'Other source'],
+    ['https://nist.gov.example.org/report', 'Other source'],
+    ['https://blog.google.example.org/release', 'Other source'],
+    ['https://deploymentsafety.openai.com.example.org/card', 'Other source'],
     ['https://reuters.com.example.org/report', 'Other source'],
     ['https://example.org/reuters.com', 'Other source']
   ]) {
