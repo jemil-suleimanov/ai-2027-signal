@@ -210,6 +210,9 @@ if (updatesBuffer) {
         if (html.includes('Loading the latest weekly assessment…')) {
           fail('generated HTML must not leave the latest assessment in a loading state');
         }
+        if (html.includes('class="update-details"')) {
+          fail('static fallback must keep the latest assessment expanded');
+        }
         const fallbackSourceKinds = (html.match(/class="source-kind"/g) || []).length;
         if (fallbackSourceKinds !== latest.sources.length) {
           fail('static fallback must label every latest-assessment source');

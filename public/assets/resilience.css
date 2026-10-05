@@ -72,6 +72,29 @@ footer {
   white-space: nowrap;
 }
 
+.update-details summary {
+  cursor: pointer;
+  list-style-position: outside;
+}
+
+.update-details summary::marker {
+  color: var(--acid);
+}
+
+.update-details summary h3 {
+  display: inline;
+  margin: 0;
+}
+
+.update-details summary:focus-visible {
+  outline: 2px solid var(--acid);
+  outline-offset: 6px;
+}
+
+.update-details[open] summary {
+  margin-bottom: 15px;
+}
+
 .history-card {
   margin-top: 18px;
   padding: 28px 30px 24px;
