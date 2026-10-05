@@ -22,6 +22,7 @@ class FakeElement {
     this.textContent = '';
     this.scrolledIntoView = false;
     this.focused = false;
+    this.disclosure = null;
   }
 
   getAttribute(name) {
@@ -44,11 +45,17 @@ class FakeElement {
     assert.equal(options?.preventScroll, true);
     this.focused = true;
   }
+
+  querySelector(selector) {
+    assert.equal(selector, 'details');
+    return this.disclosure;
+  }
 }
 
 async function render(response, hash = '', now = `${publishedUpdates[0].date}T12:00:00Z`, fetchImpl = async () => response) {
   const updateIds = publishedUpdates.map(update => `update-${update.date}`);
   const elements = new Map([...elementIds, ...updateIds].map(id => [id, new FakeElement()]));
+  for (const id of updateIds.slice(1)) elements.get(id).disclosure = { open: false };
   for (const id of ['score-note', 'tracks', 'history', 'updates']) {
     elements.get(id).setAttribute('aria-busy', 'true');
   }
@@ -163,6 +170,10 @@ assert.equal(occurrences(element(success, 'tracks').innerHTML, 'role="progressba
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="update '), publishedUpdates.length);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'aria-labelledby="update-title-'), publishedUpdates.length);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'tabindex="-1"'), publishedUpdates.length);
+assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="update-details"'), publishedUpdates.length - 1);
+assert.equal(occurrences(element(success, 'updates').innerHTML, '<summary>'), publishedUpdates.length - 1);
+const latestMarkup = element(success, 'updates').innerHTML.match(/<article[^>]+class="update latest"[\s\S]*?<\/article>/)?.[0] ?? '';
+assert.doesNotMatch(latestMarkup, /class="update-details"/);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="source-kind"'), sourceCount);
 assert.equal(occurrences(element(success, 'updates').innerHTML, ' (opens in new tab)'), sourceCount);
 
@@ -246,12 +257,14 @@ const deepLink = await render({
 }, `#update-${requestedDate}`);
 assert.equal(element(deepLink, `update-${requestedDate}`).scrolledIntoView, true);
 assert.equal(element(deepLink, `update-${requestedDate}`).focused, true);
+assert.equal(element(deepLink, `update-${requestedDate}`).disclosure.open, true);
 
 const subsequentDate = publishedUpdates[1].date;
 deepLink.location.hash = `#update-${subsequentDate}`;
 deepLink.listeners.get('hashchange')();
 assert.equal(element(deepLink, `update-${subsequentDate}`).scrolledIntoView, true);
 assert.equal(element(deepLink, `update-${subsequentDate}`).focused, true);
+assert.equal(element(deepLink, `update-${subsequentDate}`).disclosure.open, true);
 
 const malformedDeepLink = await render({
   ok: true,
