@@ -191,8 +191,17 @@ function focusRequestedUpdate() {
 
   const target = document.getElementById(requestedUpdate);
   if (!target) return;
+  const disclosure = target.querySelector?.('details');
+  if (disclosure) disclosure.open = true;
   target.focus({ preventScroll: true });
   target.scrollIntoView();
+}
+
+function renderUpdateContent(update) {
+  return `${update.body.split('\n\n').map(p => `<p>${escapeHtml(p)}</p>`).join('')}
+    <div class="sources" aria-label="Sources">${update.sources.map(s => {
+      return `<a href="${escapeHtml(safeSourceUrl(s.url))}" target="_blank" rel="noreferrer"><span class="source-kind">${escapeHtml(s.kind)}</span><span>${escapeHtml(s.title)}<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></span></a>`;
+    }).join('')}</div>`;
 }
 
 function renderUpdates(data) {
@@ -226,11 +235,9 @@ function renderUpdates(data) {
   $('updates').innerHTML = data.map((update, index) => `
     <article id="update-${escapeHtml(update.date)}" class="update ${index ? '' : 'latest'}" tabindex="-1" aria-labelledby="update-title-${escapeHtml(update.date)}">
       <div class="update-meta"><time datetime="${escapeHtml(update.date)}">${escapeHtml(update.date)}</time><span>${index ? 'Archive' : 'Latest signal'}</span></div>
-      <div><h3 id="update-title-${escapeHtml(update.date)}">${escapeHtml(update.title)}</h3>${update.body.split('\n\n').map(p => `<p>${escapeHtml(p)}</p>`).join('')}
-        <div class="sources" aria-label="Sources">${update.sources.map(s => {
-          return `<a href="${escapeHtml(safeSourceUrl(s.url))}" target="_blank" rel="noreferrer"><span class="source-kind">${escapeHtml(s.kind)}</span><span>${escapeHtml(s.title)}<span aria-hidden="true"> ↗</span><span class="visually-hidden"> (opens in new tab)</span></span></a>`;
-        }).join('')}</div>
-      </div>
+      ${index
+        ? `<details class="update-details"><summary><h3 id="update-title-${escapeHtml(update.date)}">${escapeHtml(update.title)}</h3></summary><div class="update-details-body">${renderUpdateContent(update)}</div></details>`
+        : `<div><h3 id="update-title-${escapeHtml(update.date)}">${escapeHtml(update.title)}</h3>${renderUpdateContent(update)}</div>`}
       <div class="mini-score"><b>${escapeHtml(update.score)}</b><span>${escapeHtml(update.verdict)}</span></div>
     </article>
   `).join('');
