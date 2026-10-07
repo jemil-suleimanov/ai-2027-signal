@@ -182,10 +182,10 @@ function renderUnavailable(title, message) {
   `;
 }
 
-function focusRequestedUpdate() {
+function focusRequestedUpdate(hash = location.hash) {
   let requestedUpdate = '';
   try {
-    requestedUpdate = decodeURIComponent(location.hash.slice(1));
+    requestedUpdate = decodeURIComponent(hash.slice(1));
   } catch {}
   if (!/^update-\d{4}-\d{2}-\d{2}$/.test(requestedUpdate)) return;
 
@@ -195,6 +195,12 @@ function focusRequestedUpdate() {
   if (disclosure) disclosure.open = true;
   target.focus({ preventScroll: true });
   target.scrollIntoView();
+}
+
+function focusHistoryLink(event) {
+  const link = event.target.closest?.('a[href^="#update-"]');
+  const hash = link?.getAttribute('href');
+  if (hash) focusRequestedUpdate(hash);
 }
 
 function renderUpdateContent(update) {
@@ -281,4 +287,5 @@ async function loadUpdates() {
 }
 
 window.addEventListener('hashchange', focusRequestedUpdate);
+$('history').onclick = focusHistoryLink;
 void loadUpdates();

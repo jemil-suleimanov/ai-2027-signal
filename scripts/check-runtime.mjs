@@ -266,6 +266,22 @@ assert.equal(element(deepLink, `update-${subsequentDate}`).scrolledIntoView, tru
 assert.equal(element(deepLink, `update-${subsequentDate}`).focused, true);
 assert.equal(element(deepLink, `update-${subsequentDate}`).disclosure.open, true);
 
+const repeatedTarget = element(deepLink, `update-${subsequentDate}`);
+repeatedTarget.disclosure.open = false;
+repeatedTarget.scrolledIntoView = false;
+repeatedTarget.focused = false;
+element(deepLink, 'history').onclick({
+  target: {
+    closest: selector => {
+      assert.equal(selector, 'a[href^="#update-"]');
+      return { getAttribute: name => name === 'href' ? `#update-${subsequentDate}` : null };
+    }
+  }
+});
+assert.equal(repeatedTarget.scrolledIntoView, true);
+assert.equal(repeatedTarget.focused, true);
+assert.equal(repeatedTarget.disclosure.open, true);
+
 const malformedDeepLink = await render({
   ok: true,
   status: 200,
