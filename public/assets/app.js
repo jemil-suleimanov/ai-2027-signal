@@ -198,6 +198,7 @@ function focusRequestedUpdate(hash = location.hash) {
 }
 
 function focusHistoryLink(event) {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
   const link = event.target.closest?.('a[href^="#update-"]');
   const hash = link?.getAttribute('href');
   if (!hash) return;

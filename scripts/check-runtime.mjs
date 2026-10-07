@@ -282,6 +282,8 @@ repeatedTarget.scrolledIntoView = false;
 repeatedTarget.focused = false;
 let repeatedNavigationPrevented = false;
 element(deepLink, 'history').listeners.get('click')({
+  button: 0,
+  defaultPrevented: false,
   preventDefault: () => { repeatedNavigationPrevented = true; },
   target: {
     closest: selector => {
