@@ -23,6 +23,11 @@ class FakeElement {
     this.scrolledIntoView = false;
     this.focused = false;
     this.disclosure = null;
+    this.listeners = new Map();
+  }
+
+  addEventListener(type, listener) {
+    this.listeners.set(type, listener);
   }
 
   getAttribute(name) {
@@ -270,7 +275,7 @@ const repeatedTarget = element(deepLink, `update-${subsequentDate}`);
 repeatedTarget.disclosure.open = false;
 repeatedTarget.scrolledIntoView = false;
 repeatedTarget.focused = false;
-element(deepLink, 'history').onclick({
+element(deepLink, 'history').listeners.get('click')({
   target: {
     closest: selector => {
       assert.equal(selector, 'a[href^="#update-"]');

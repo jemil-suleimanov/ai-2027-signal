@@ -287,5 +287,5 @@ async function loadUpdates() {
 }
 
 window.addEventListener('hashchange', focusRequestedUpdate);
-$('history').onclick = focusHistoryLink;
+$('history').addEventListener('click', focusHistoryLink);
 void loadUpdates();
