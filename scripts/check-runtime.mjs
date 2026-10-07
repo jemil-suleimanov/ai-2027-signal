@@ -104,6 +104,11 @@ async function render(response, hash = '', now = `${publishedUpdates[0].date}T12
     },
     clearTimeout: id => timers.delete(id),
     location: { hash },
+    history: {
+      pushState(_state, _unused, nextHash) {
+        context.location.hash = nextHash;
+      }
+    },
     window: {
       addEventListener(type, listener) {
         listeners.set(type, listener);
@@ -275,7 +280,11 @@ const repeatedTarget = element(deepLink, `update-${subsequentDate}`);
 repeatedTarget.disclosure.open = false;
 repeatedTarget.scrolledIntoView = false;
 repeatedTarget.focused = false;
+let repeatedNavigationPrevented = false;
 element(deepLink, 'history').listeners.get('click')({
+  button: 0,
+  defaultPrevented: false,
+  preventDefault: () => { repeatedNavigationPrevented = true; },
   target: {
     closest: selector => {
       assert.equal(selector, 'a[href^="#update-"]');
@@ -283,6 +292,7 @@ element(deepLink, 'history').listeners.get('click')({
     }
   }
 });
+assert.equal(repeatedNavigationPrevented, true);
 assert.equal(repeatedTarget.scrolledIntoView, true);
 assert.equal(repeatedTarget.focused, true);
 assert.equal(repeatedTarget.disclosure.open, true);
