@@ -271,7 +271,7 @@ assert.equal(element(deepLink, `update-${requestedDate}`).disclosure.open, true)
 
 const subsequentDate = publishedUpdates[1].date;
 deepLink.location.hash = `#update-${subsequentDate}`;
-deepLink.listeners.get('hashchange')();
+deepLink.listeners.get('hashchange')({ type: 'hashchange' });
 assert.equal(element(deepLink, `update-${subsequentDate}`).scrolledIntoView, true);
 assert.equal(element(deepLink, `update-${subsequentDate}`).focused, true);
 assert.equal(element(deepLink, `update-${subsequentDate}`).disclosure.open, true);
@@ -300,7 +300,7 @@ assert.equal(repeatedTarget.disclosure.open, true);
 repeatedTarget.disclosure.open = false;
 repeatedTarget.scrolledIntoView = false;
 repeatedTarget.focused = false;
-deepLink.listeners.get('popstate')();
+deepLink.listeners.get('popstate')({ type: 'popstate' });
 assert.equal(repeatedTarget.scrolledIntoView, true);
 assert.equal(repeatedTarget.focused, true);
 assert.equal(repeatedTarget.disclosure.open, true);

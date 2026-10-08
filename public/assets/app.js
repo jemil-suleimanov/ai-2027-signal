@@ -291,7 +291,7 @@ async function loadUpdates() {
   }
 }
 
-window.addEventListener('hashchange', focusRequestedUpdate);
-window.addEventListener('popstate', focusRequestedUpdate);
+window.addEventListener('hashchange', () => focusRequestedUpdate());
+window.addEventListener('popstate', () => focusRequestedUpdate());
 $('history').addEventListener('click', focusHistoryLink);
 void loadUpdates();
