@@ -297,6 +297,14 @@ assert.equal(repeatedTarget.scrolledIntoView, true);
 assert.equal(repeatedTarget.focused, true);
 assert.equal(repeatedTarget.disclosure.open, true);
 
+repeatedTarget.disclosure.open = false;
+repeatedTarget.scrolledIntoView = false;
+repeatedTarget.focused = false;
+deepLink.listeners.get('popstate')();
+assert.equal(repeatedTarget.scrolledIntoView, true);
+assert.equal(repeatedTarget.focused, true);
+assert.equal(repeatedTarget.disclosure.open, true);
+
 const malformedDeepLink = await render({
   ok: true,
   status: 200,
