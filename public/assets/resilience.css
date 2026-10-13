@@ -59,15 +59,18 @@ footer {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding: 9px 12px;
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .source-kind {
   padding-right: 8px;
   border-right: 1px solid rgba(217, 255, 67, 0.3);
   color: #bdc6bf;
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 0.08em;
-  line-height: 1.3;
+  line-height: 1.4;
   text-transform: uppercase;
   white-space: nowrap;
 }
