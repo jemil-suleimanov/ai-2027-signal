@@ -48,6 +48,12 @@ function contrastRatio(first, second) {
   return (luminances[0] + 0.05) / (luminances[1] + 0.05);
 }
 
+function cssPixelValue(css, selector, property) {
+  const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const block = css.match(new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`))?.[1];
+  return Number(block?.match(new RegExp(`${property}:\\s*([0-9.]+)px`))?.[1]);
+}
+
 if (indexBuffer) {
   const html = indexBuffer.toString('utf8');
 
@@ -166,6 +172,13 @@ if (resilienceBuffer) {
     fail('paper and muted color tokens must remain explicit six-digit hex values');
   } else if (contrastRatio(paper, muted) < 4.5) {
     fail('muted text must meet WCAG AA 4.5:1 contrast against the paper background');
+  }
+
+  if (!(cssPixelValue(css, '.sources a', 'font-size') >= 11)) {
+    fail('source titles must remain at least 11px for evidence readability');
+  }
+  if (!(cssPixelValue(css, '.source-kind', 'font-size') >= 9)) {
+    fail('source provenance labels must remain at least 9px for evidence readability');
   }
 }
 
