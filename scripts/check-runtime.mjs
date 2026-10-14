@@ -177,6 +177,15 @@ for (const update of publishedUpdates) {
 }
 assert.match(element(success, 'history').innerHTML, /Choose a date to read its evidence\./);
 assert.equal(occurrences(element(success, 'tracks').innerHTML, 'role="progressbar"'), 4);
+assert.equal(occurrences(element(success, 'tracks').innerHTML, 'class="track-delta"'), 4);
+for (const key of ['capabilities', 'automation', 'compute', 'geopolitics']) {
+  const delta = latest[key] - publishedUpdates[1][key];
+  const points = Math.abs(delta);
+  const label = delta === 0
+    ? 'unchanged from previous assessment'
+    : `${delta > 0 ? 'up' : 'down'} ${points} ${points === 1 ? 'point' : 'points'} from previous assessment`;
+  assert.match(element(success, 'tracks').innerHTML, new RegExp(`aria-valuetext="${latest[key]} out of 100, ${label}"`));
+}
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'class="update '), publishedUpdates.length);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'aria-labelledby="update-title-'), publishedUpdates.length);
 assert.equal(occurrences(element(success, 'updates').innerHTML, 'tabindex="-1"'), publishedUpdates.length);
@@ -193,9 +202,23 @@ const latestOnlyResponse = {
   json: async () => [structuredClone(latest)]
 };
 const graceBoundary = await render(latestOnlyResponse, '', daysAfter(latest.date, 10));
+assert.equal(occurrences(element(graceBoundary, 'tracks').innerHTML, 'class="track-delta"'), 0);
 assert.equal(element(graceBoundary, 'freshness').dataset.freshness, 'current');
 assert.equal(element(graceBoundary, 'freshness-label').textContent, 'Updated weekly');
 assert.match(element(graceBoundary, 'freshness').getAttribute('title'), /\(10 days ago\)/);
+
+const mixedTrackUpdates = [structuredClone(latest), structuredClone(publishedUpdates[1])];
+mixedTrackUpdates[0].compute = mixedTrackUpdates[1].compute;
+mixedTrackUpdates[0].geopolitics = Math.max(0, mixedTrackUpdates[1].geopolitics - 1);
+const mixedTrackChanges = await render({
+  ok: true,
+  status: 200,
+  json: async () => mixedTrackUpdates
+});
+assert.match(element(mixedTrackChanges, 'tracks').innerHTML, /data-direction="same" aria-hidden="true">0/);
+assert.match(element(mixedTrackChanges, 'tracks').innerHTML, /data-direction="down" aria-hidden="true">−1/);
+assert.match(element(mixedTrackChanges, 'tracks').innerHTML, /unchanged from previous assessment/);
+assert.match(element(mixedTrackChanges, 'tracks').innerHTML, /down 1 point from previous assessment/);
 
 const overdueBoundary = await render(latestOnlyResponse, '', daysAfter(latest.date, 11));
 assert.equal(element(overdueBoundary, 'freshness').dataset.freshness, 'overdue');

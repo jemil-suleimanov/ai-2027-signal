@@ -62,6 +62,20 @@ function describeScoreChange(updates) {
   return `${delta > 0 ? 'Up' : 'Down'} ${points} ${points === 1 ? 'point' : 'points'} vs ${previousDate}`;
 }
 
+function describeTrackChange(current, previous) {
+  if (previous === undefined) return null;
+
+  const delta = current - previous;
+  if (delta === 0) return { text: '0', direction: 'same', label: 'unchanged from previous assessment' };
+
+  const points = Math.abs(delta);
+  return {
+    text: `${delta > 0 ? '+' : '−'}${points}`,
+    direction: delta > 0 ? 'up' : 'down',
+    label: `${delta > 0 ? 'up' : 'down'} ${points} ${points === 1 ? 'point' : 'points'} from previous assessment`
+  };
+}
+
 function replaceOnce(html, before, after) {
   if (!html.includes(before)) throw new Error(`index.html: missing fallback marker: ${before}`);
   return html.replace(before, after);
@@ -93,8 +107,15 @@ async function injectStaticFallback(updates) {
     ['<span id="updated" class="date"></span>', `<span id="updated" class="date">Assessment · ${escapeHtml(formatAssessmentDate(latest.date))} · ${escapeHtml(describeScoreChange(updates))}</span>`],
     ['<div class="marker scenario-marker"><span>Scenario</span><b id="scenario-marker"></b><small id="scenario-date"></small></div>', `<div class="marker scenario-marker"><span>Scenario</span><b id="scenario-marker">${escapeHtml(latest.scenario_marker)}</b><small id="scenario-date">${escapeHtml(latest.scenario_date)}</small></div>`],
     ['<div class="marker reality-marker"><span>Observed</span><b id="reality-marker"></b><small>as of latest update</small></div>', `<div class="marker reality-marker"><span>Observed</span><b id="reality-marker">${escapeHtml(latest.reality_marker)}</b><small>as of latest update</small></div>`],
-    ['<div id="tracks" class="tracks" aria-busy="true"></div>', `<div id="tracks" class="tracks" aria-busy="false">${Object.entries(trackNames).map(([key, label]) => `
-          <div class="track"><div><span>${label}</span><b>${escapeHtml(latest[key])}</b></div><div class="track-meter" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${escapeHtml(latest[key])}" aria-valuetext="${escapeHtml(latest[key])} out of 100"><i style="width:${escapeHtml(latest[key])}%"></i></div></div>`).join('')}
+    ['<div id="tracks" class="tracks" aria-busy="true"></div>', `<div id="tracks" class="tracks" aria-busy="false">${Object.entries(trackNames).map(([key, label]) => {
+      const change = describeTrackChange(latest[key], updates[1]?.[key]);
+      const changeMarkup = change
+        ? `<small class="track-delta" data-direction="${change.direction}" aria-hidden="true">${change.text}</small>`
+        : '';
+      const valueText = `${latest[key]} out of 100${change ? `, ${change.label}` : ''}`;
+      return `
+          <div class="track"><div><span>${label}</span><span class="track-reading"><b>${escapeHtml(latest[key])}</b>${changeMarkup}</span></div><div class="track-meter" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${escapeHtml(latest[key])}" aria-valuetext="${escapeHtml(valueText)}"><i style="width:${escapeHtml(latest[key])}%"></i></div></div>`;
+    }).join('')}
         </div>`],
     ['<p id="history-summary">Loading assessment history…</p>', `<p id="history-summary">${updates.length} published assessments · ${escapeHtml(updates.at(-1).score)} → ${escapeHtml(latest.score)}</p>`],
     ['<div id="history" aria-busy="true"></div>', `<div id="history" aria-busy="false"><p class="history-note">The interactive chart requires JavaScript. <a href="${archiveUrl}">Browse all published assessments</a>.</p></div>`],
