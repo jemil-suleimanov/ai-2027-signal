@@ -109,6 +109,20 @@ function describeScoreChange(data) {
   return `${delta > 0 ? 'Up' : 'Down'} ${points} ${points === 1 ? 'point' : 'points'} vs ${previousDate}`;
 }
 
+function describeTrackChange(current, previous) {
+  if (previous === undefined) return null;
+
+  const delta = current - previous;
+  if (delta === 0) return { text: '0', direction: 'same', label: 'unchanged from previous assessment' };
+
+  const points = Math.abs(delta);
+  return {
+    text: `${delta > 0 ? '+' : '−'}${points}`,
+    direction: delta > 0 ? 'up' : 'down',
+    label: `${delta > 0 ? 'up' : 'down'} ${points} ${points === 1 ? 'point' : 'points'} from previous assessment`
+  };
+}
+
 function renderHistory(data) {
   const history = [...data].reverse();
   const width = 600;
@@ -237,9 +251,16 @@ function renderUpdates(data) {
   $('reality-marker').textContent = latest.reality_marker;
 
   const trackNames = { capabilities:'Model capabilities', automation:'AI R&D automation', compute:'Compute scale-up', geopolitics:'Race dynamics' };
-  $('tracks').innerHTML = Object.entries(trackNames).map(([key, label]) => `
-    <div class="track"><div><span>${label}</span><b>${escapeHtml(latest[key])}</b></div><div class="track-meter" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${escapeHtml(latest[key])}" aria-valuetext="${escapeHtml(latest[key])} out of 100"><i style="width:${escapeHtml(latest[key])}%"></i></div></div>
-  `).join('');
+  $('tracks').innerHTML = Object.entries(trackNames).map(([key, label]) => {
+    const change = describeTrackChange(latest[key], data[1]?.[key]);
+    const changeMarkup = change
+      ? `<small class="track-delta" data-direction="${change.direction}" aria-hidden="true">${change.text}</small>`
+      : '';
+    const valueText = `${latest[key]} out of 100${change ? `, ${change.label}` : ''}`;
+    return `
+      <div class="track"><div><span>${label}</span><span class="track-reading"><b>${escapeHtml(latest[key])}</b>${changeMarkup}</span></div><div class="track-meter" role="progressbar" aria-label="${label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${escapeHtml(latest[key])}" aria-valuetext="${escapeHtml(valueText)}"><i style="width:${escapeHtml(latest[key])}%"></i></div></div>
+    `;
+  }).join('');
 
   renderHistory(data);
 

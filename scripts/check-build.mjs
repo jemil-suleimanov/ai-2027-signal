@@ -168,10 +168,16 @@ if (resilienceBuffer) {
   const baseCss = stylesBuffer?.toString('utf8') ?? '';
   const paper = baseCss.match(/--paper:(#[0-9a-f]{6})/i)?.[1];
   const muted = css.match(/--muted:\s*(#[0-9a-f]{6})/i)?.[1];
-  if (!paper || !muted) {
-    fail('paper and muted color tokens must remain explicit six-digit hex values');
-  } else if (contrastRatio(paper, muted) < 4.5) {
-    fail('muted text must meet WCAG AA 4.5:1 contrast against the paper background');
+  const green = baseCss.match(/--green:(#[0-9a-f]{6})/i)?.[1];
+  const down = css.match(/--down:\s*(#[0-9a-f]{6})/i)?.[1];
+  if (!paper || !muted || !green || !down) {
+    fail('paper and track-text color tokens must remain explicit six-digit hex values');
+  } else {
+    for (const [name, color] of [['muted', muted], ['up', green], ['down', down]]) {
+      if (contrastRatio(paper, color) < 4.5) {
+        fail(`${name} track text must meet WCAG AA 4.5:1 contrast against the paper background`);
+      }
+    }
   }
 
   if (!(cssPixelValue(css, '.sources a', 'font-size') >= 11)) {
@@ -179,6 +185,9 @@ if (resilienceBuffer) {
   }
   if (!(cssPixelValue(css, '.source-kind', 'font-size') >= 9)) {
     fail('source provenance labels must remain at least 9px for evidence readability');
+  }
+  if (!(cssPixelValue(css, '.track-delta', 'font-size') >= 10)) {
+    fail('track changes must remain at least 10px for scanning readability');
   }
 }
 
@@ -225,6 +234,11 @@ if (updatesBuffer) {
         }
         if (html.includes('class="update-details"')) {
           fail('static fallback must keep the latest assessment expanded');
+        }
+        const expectedTrackDeltas = updates.length > 1 ? 4 : 0;
+        const fallbackTrackDeltas = (html.match(/class="track-delta"/g) || []).length;
+        if (fallbackTrackDeltas !== expectedTrackDeltas) {
+          fail('static fallback must show each available latest track change');
         }
         const fallbackSourceKinds = (html.match(/class="source-kind"/g) || []).length;
         if (fallbackSourceKinds !== latest.sources.length) {

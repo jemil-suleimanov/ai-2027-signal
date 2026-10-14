@@ -1,5 +1,6 @@
 :root {
   --muted: #646d65;
+  --down: #923a22;
   --font-sans: Manrope, "Avenir Next", Avenir, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-mono: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
@@ -43,6 +44,28 @@ footer {
 .footer-link {
   color: inherit;
   text-underline-offset: 3px;
+}
+
+.track-reading {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.track-delta {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.track-delta[data-direction="up"] {
+  color: var(--green);
+}
+
+.track-delta[data-direction="down"] {
+  color: var(--down);
 }
 
 .eyebrow[data-freshness="overdue"] .pulse {
