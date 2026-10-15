@@ -251,7 +251,10 @@ function renderUpdates(data) {
   $('reality-marker').textContent = latest.reality_marker;
 
   const trackNames = { capabilities:'Model capabilities', automation:'AI R&D automation', compute:'Compute scale-up', geopolitics:'Race dynamics' };
-  $('tracks').innerHTML = Object.entries(trackNames).map(([key, label]) => {
+  const trackChangeNote = data[1]
+    ? '<p class="tracks-note">Track score <span aria-hidden="true">·</span> change vs previous assessment</p>'
+    : '';
+  $('tracks').innerHTML = trackChangeNote + Object.entries(trackNames).map(([key, label]) => {
     const change = describeTrackChange(latest[key], data[1]?.[key]);
     const changeMarkup = change
       ? `<small class="track-delta" data-direction="${change.direction}" aria-hidden="true">${change.text}</small>`

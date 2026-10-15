@@ -189,6 +189,9 @@ if (resilienceBuffer) {
   if (!(cssPixelValue(css, '.track-delta', 'font-size') >= 10)) {
     fail('track changes must remain at least 10px for scanning readability');
   }
+  if (!(cssPixelValue(css, '.tracks-note', 'font-size') >= 10)) {
+    fail('track change legend must remain at least 10px for scanning readability');
+  }
 }
 
 if (updatesBuffer) {
@@ -239,6 +242,11 @@ if (updatesBuffer) {
         const fallbackTrackDeltas = (html.match(/class="track-delta"/g) || []).length;
         if (fallbackTrackDeltas !== expectedTrackDeltas) {
           fail('static fallback must show each available latest track change');
+        }
+        const expectedTrackNotes = updates.length > 1 ? 1 : 0;
+        const fallbackTrackNotes = (html.match(/class="tracks-note"/g) || []).length;
+        if (fallbackTrackNotes !== expectedTrackNotes) {
+          fail('static fallback must explain latest track changes when comparison is available');
         }
         const fallbackSourceKinds = (html.match(/class="source-kind"/g) || []).length;
         if (fallbackSourceKinds !== latest.sources.length) {

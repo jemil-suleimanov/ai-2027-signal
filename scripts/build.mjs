@@ -107,7 +107,7 @@ async function injectStaticFallback(updates) {
     ['<span id="updated" class="date"></span>', `<span id="updated" class="date">Assessment · ${escapeHtml(formatAssessmentDate(latest.date))} · ${escapeHtml(describeScoreChange(updates))}</span>`],
     ['<div class="marker scenario-marker"><span>Scenario</span><b id="scenario-marker"></b><small id="scenario-date"></small></div>', `<div class="marker scenario-marker"><span>Scenario</span><b id="scenario-marker">${escapeHtml(latest.scenario_marker)}</b><small id="scenario-date">${escapeHtml(latest.scenario_date)}</small></div>`],
     ['<div class="marker reality-marker"><span>Observed</span><b id="reality-marker"></b><small>as of latest update</small></div>', `<div class="marker reality-marker"><span>Observed</span><b id="reality-marker">${escapeHtml(latest.reality_marker)}</b><small>as of latest update</small></div>`],
-    ['<div id="tracks" class="tracks" aria-busy="true"></div>', `<div id="tracks" class="tracks" aria-busy="false">${Object.entries(trackNames).map(([key, label]) => {
+    ['<div id="tracks" class="tracks" aria-busy="true"></div>', `<div id="tracks" class="tracks" aria-busy="false">${updates[1] ? '<p class="tracks-note">Track score <span aria-hidden="true">·</span> change vs previous assessment</p>' : ''}${Object.entries(trackNames).map(([key, label]) => {
       const change = describeTrackChange(latest[key], updates[1]?.[key]);
       const changeMarkup = change
         ? `<small class="track-delta" data-direction="${change.direction}" aria-hidden="true">${change.text}</small>`

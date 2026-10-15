@@ -178,6 +178,8 @@ for (const update of publishedUpdates) {
 assert.match(element(success, 'history').innerHTML, /Choose a date to read its evidence\./);
 assert.equal(occurrences(element(success, 'tracks').innerHTML, 'role="progressbar"'), 4);
 assert.equal(occurrences(element(success, 'tracks').innerHTML, 'class="track-delta"'), 4);
+assert.equal(occurrences(element(success, 'tracks').innerHTML, 'class="tracks-note"'), 1);
+assert.match(element(success, 'tracks').innerHTML, /change vs previous assessment/);
 for (const key of ['capabilities', 'automation', 'compute', 'geopolitics']) {
   const delta = latest[key] - publishedUpdates[1][key];
   const points = Math.abs(delta);
@@ -203,6 +205,7 @@ const latestOnlyResponse = {
 };
 const graceBoundary = await render(latestOnlyResponse, '', daysAfter(latest.date, 10));
 assert.equal(occurrences(element(graceBoundary, 'tracks').innerHTML, 'class="track-delta"'), 0);
+assert.equal(occurrences(element(graceBoundary, 'tracks').innerHTML, 'class="tracks-note"'), 0);
 assert.equal(element(graceBoundary, 'freshness').dataset.freshness, 'current');
 assert.equal(element(graceBoundary, 'freshness-label').textContent, 'Updated weekly');
 assert.match(element(graceBoundary, 'freshness').getAttribute('title'), /\(10 days ago\)/);
