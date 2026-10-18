@@ -14,7 +14,7 @@ const sourceHosts = {
   'Independent research': new Set(['artificialanalysis.ai', 'arcprize.org', 'epoch.ai', 'metr.org', 'transluce.org']),
   'News reporting': new Set(['apnews.com', 'ft.com', 'reuters.com', 'theverge.com']),
   'Research paper': new Set(['arxiv.org']),
-  'First-party': new Set(['alibabacloud.com', 'anthropic.com', 'api-docs.deepseek.com', 'blog.google', 'deploymentsafety.openai.com', 'huggingface.co', 'investors.danaher.com', 'kimi.com', 'news.samsung.com', 'nvidianews.nvidia.com', 'openai.com', 'thinkingmachines.ai'])
+  'First-party': new Set(['about.fb.com', 'alibabacloud.com', 'anthropic.com', 'api-docs.deepseek.com', 'blog.google', 'deploymentsafety.openai.com', 'huggingface.co', 'investors.danaher.com', 'kimi.com', 'news.samsung.com', 'nvidianews.nvidia.com', 'openai.com', 'research.meta.ai', 'thinkingmachines.ai'])
 };
 
 export function describeSource(url) {
