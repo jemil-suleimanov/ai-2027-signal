@@ -337,12 +337,15 @@ try {
     ['https://www.ft.com/content/example', 'News reporting'],
     ['https://www.theverge.com/ai-artificial-intelligence/example', 'News reporting'],
     ['https://arxiv.org/abs/example', 'Research paper'],
+    ['https://about.fb.com/news/example', 'First-party'],
     ['https://www.alibabacloud.com/blog/example', 'First-party'],
     ['https://www.anthropic.com/news/example', 'First-party'],
     ['https://blog.google/innovation-and-ai/example', 'First-party'],
     ['https://deploymentsafety.openai.com/example', 'First-party'],
     ['https://investors.danaher.com/example', 'First-party'],
+    ['https://research.meta.ai/static/example-model-card', 'First-party'],
     ['https://example.org/new-publisher', 'Other source'],
+    ['https://about.fb.com.example.org/news/example', 'Other source'],
     ['https://alibabacloud.com.example.org/blog/example', 'Other source'],
     ['https://cisa.gov.example.org/advisory', 'Other source'],
     ['https://nist.gov.example.org/report', 'Other source'],
@@ -351,6 +354,7 @@ try {
     ['https://ft.com.example.org/report', 'Other source'],
     ['https://theverge.com.example.org/report', 'Other source'],
     ['https://investors.danaher.com.example.org/release', 'Other source'],
+    ['https://research.meta.ai.example.org/card', 'Other source'],
     ['https://reuters.com.example.org/report', 'Other source'],
     ['https://example.org/reuters.com', 'Other source']
   ]) {
