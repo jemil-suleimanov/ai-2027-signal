@@ -166,6 +166,10 @@ if (resilienceBuffer) {
   }
 
   const baseCss = stylesBuffer?.toString('utf8') ?? '';
+  if (!baseCss.includes('@media(max-width:780px)') || !baseCss.includes('.hero-grid,.tracks{grid-template-columns:1fr}')) {
+    fail('mobile hero and track cards must collapse to a single column');
+  }
+
   const paper = baseCss.match(/--paper:(#[0-9a-f]{6})/i)?.[1];
   const muted = css.match(/--muted:\s*(#[0-9a-f]{6})/i)?.[1];
   const green = baseCss.match(/--green:(#[0-9a-f]{6})/i)?.[1];
