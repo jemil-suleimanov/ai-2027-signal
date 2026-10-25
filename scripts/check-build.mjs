@@ -335,6 +335,7 @@ try {
   for (const [url, expectedKind] of [
     ['https://ai-2027.com/', 'Scenario reference'],
     ['https://www.cisa.gov/news-events/cybersecurity-advisories/example', 'Government source'],
+    ['https://www.aisi.gov.uk/blog/example', 'Government source'],
     ['https://www.nist.gov/news-events/news/example', 'Government source'],
     ['https://metr.org/time-horizons/', 'Independent research'],
     ['https://www.reuters.com/technology/', 'News reporting'],
@@ -348,10 +349,12 @@ try {
     ['https://deploymentsafety.openai.com/example', 'First-party'],
     ['https://investors.danaher.com/example', 'First-party'],
     ['https://research.meta.ai/static/example-model-card', 'First-party'],
+    ['https://research.nvidia.com/labs/example', 'First-party'],
     ['https://example.org/new-publisher', 'Other source'],
     ['https://about.fb.com.example.org/news/example', 'Other source'],
     ['https://alibabacloud.com.example.org/blog/example', 'Other source'],
     ['https://cisa.gov.example.org/advisory', 'Other source'],
+    ['https://aisi.gov.uk.example.org/blog/example', 'Other source'],
     ['https://nist.gov.example.org/report', 'Other source'],
     ['https://blog.google.example.org/release', 'Other source'],
     ['https://deploymentsafety.openai.com.example.org/card', 'Other source'],
@@ -359,6 +362,7 @@ try {
     ['https://theverge.com.example.org/report', 'Other source'],
     ['https://investors.danaher.com.example.org/release', 'Other source'],
     ['https://research.meta.ai.example.org/card', 'Other source'],
+    ['https://research.nvidia.com.example.org/labs/example', 'Other source'],
     ['https://reuters.com.example.org/report', 'Other source'],
     ['https://example.org/reuters.com', 'Other source']
   ]) {
