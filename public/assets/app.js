@@ -196,6 +196,9 @@ function renderUnavailable(title, message) {
   `;
 }
 
+let selectedHistoryUpdate = '';
+let selectedHistoryLink = null;
+
 function focusRequestedUpdate(hash = location.hash) {
   let requestedUpdate = '';
   try {
@@ -205,10 +208,29 @@ function focusRequestedUpdate(hash = location.hash) {
 
   const target = document.getElementById(requestedUpdate);
   if (!target) return;
+  if (selectedHistoryUpdate && selectedHistoryUpdate !== requestedUpdate) {
+    const previousDisclosure = document.getElementById(selectedHistoryUpdate)?.querySelector?.('details');
+    if (previousDisclosure) previousDisclosure.open = false;
+  }
   const disclosure = target.querySelector?.('details');
   if (disclosure) disclosure.open = true;
+  selectedHistoryUpdate = requestedUpdate;
   target.focus({ preventScroll: true });
   target.scrollIntoView();
+}
+
+function restoreHistoryIndex() {
+  if (location.hash || !selectedHistoryUpdate) return;
+
+  const disclosure = document.getElementById(selectedHistoryUpdate)?.querySelector?.('details');
+  if (disclosure) disclosure.open = false;
+  selectedHistoryUpdate = '';
+  selectedHistoryLink?.focus({ preventScroll: true });
+}
+
+function restoreHistoryNavigation() {
+  if (location.hash) focusRequestedUpdate();
+  else restoreHistoryIndex();
 }
 
 function focusHistoryLink(event) {
@@ -218,6 +240,7 @@ function focusHistoryLink(event) {
   if (!hash) return;
 
   event.preventDefault();
+  selectedHistoryLink = link;
   if (location.hash !== hash) history.pushState(null, '', hash);
   focusRequestedUpdate(hash);
 }
@@ -315,7 +338,7 @@ async function loadUpdates() {
   }
 }
 
-window.addEventListener('hashchange', () => focusRequestedUpdate());
-window.addEventListener('popstate', () => focusRequestedUpdate());
+window.addEventListener('hashchange', restoreHistoryNavigation);
+window.addEventListener('popstate', restoreHistoryNavigation);
 $('history').addEventListener('click', focusHistoryLink);
 void loadUpdates();

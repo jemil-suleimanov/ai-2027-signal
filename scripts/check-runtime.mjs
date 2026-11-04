@@ -303,6 +303,8 @@ assert.equal(element(deepLink, `update-${subsequentDate}`).focused, true);
 assert.equal(element(deepLink, `update-${subsequentDate}`).disclosure.open, true);
 
 const repeatedTarget = element(deepLink, `update-${subsequentDate}`);
+const repeatedLink = new FakeElement();
+repeatedLink.setAttribute('href', `#update-${subsequentDate}`);
 repeatedTarget.disclosure.open = false;
 repeatedTarget.scrolledIntoView = false;
 repeatedTarget.focused = false;
@@ -314,7 +316,7 @@ element(deepLink, 'history').listeners.get('click')({
   target: {
     closest: selector => {
       assert.equal(selector, 'a[href^="#update-"]');
-      return { getAttribute: name => name === 'href' ? `#update-${subsequentDate}` : null };
+      return repeatedLink;
     }
   }
 });
@@ -330,6 +332,12 @@ deepLink.listeners.get('popstate')({ type: 'popstate' });
 assert.equal(repeatedTarget.scrolledIntoView, true);
 assert.equal(repeatedTarget.focused, true);
 assert.equal(repeatedTarget.disclosure.open, true);
+
+deepLink.location.hash = '';
+repeatedLink.focused = false;
+deepLink.listeners.get('popstate')({ type: 'popstate' });
+assert.equal(repeatedTarget.disclosure.open, false);
+assert.equal(repeatedLink.focused, true);
 
 const malformedDeepLink = await render({
   ok: true,
