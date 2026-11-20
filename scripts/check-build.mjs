@@ -123,6 +123,7 @@ if (indexBuffer) {
 
   for (const requiredMarkup of [
     '<main id="main-content" tabindex="-1">',
+    '<a class="brand" href="#main-content"><span class="brand-mark" aria-hidden="true">27</span><span>AI 2027 Signal</span></a>',
     '<nav aria-label="Primary navigation">',
     '<div id="freshness" class="eyebrow" data-freshness="unknown">',
     '<span id="freshness-label" role="status" aria-live="polite">',
