@@ -17,6 +17,17 @@ const sourceHosts = {
   'First-party': new Set(['about.fb.com', 'alibabacloud.com', 'anthropic.com', 'api-docs.deepseek.com', 'blog.google', 'data.alibabagroup.com', 'deepmind.google', 'deploymentsafety.openai.com', 'huggingface.co', 'investor.nvidia.com', 'investors.danaher.com', 'kimi.com', 'longcat.ai', 'nebius.com', 'news.samsung.com', 'nvidianews.nvidia.com', 'openai.com', 'research.meta.ai', 'research.nvidia.com', 'thinkingmachines.ai'])
 };
 
+const movedSourceUrls = new Map([
+  [
+    'https://api-docs.deepseek.com/news/news251017',
+    'https://api-docs.deepseek.com/news/news261017/'
+  ]
+]);
+
+export function resolveSourceUrl(url) {
+  return movedSourceUrls.get(url) || url;
+}
+
 export function describeSource(url) {
   try {
     const host = new URL(url).hostname.replace(/^www\./, '');

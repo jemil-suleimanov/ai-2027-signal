@@ -1,7 +1,7 @@
 import { mkdir, readdir, readFile, rm, cp, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
-import { describeSource } from './source-provenance.mjs';
+import { describeSource, resolveSourceUrl } from './source-provenance.mjs';
 
 const root = new URL('..', import.meta.url).pathname;
 const contentDir = join(root, 'content/updates');
@@ -251,7 +251,7 @@ function parse(text, file) {
   for (const key of ['score','capabilities','automation','compute','geopolitics']) meta[key] = Number(meta[key]);
   meta.sources = (meta.sources || '').split(';').filter(Boolean).map(item => {
     const i = item.lastIndexOf('|');
-    const url = item.slice(i + 1);
+    const url = resolveSourceUrl(item.slice(i + 1));
     return { title:item.slice(0, i), url, kind:describeSource(url) };
   });
   return { ...meta, body: match[2].trim() };
