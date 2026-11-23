@@ -1,4 +1,5 @@
 import { readdir, readFile } from 'node:fs/promises';
+import { resolveSourceUrl } from './source-provenance.mjs';
 
 const updatesDir = new URL('../content/updates/', import.meta.url);
 const timeoutMs = 12_000;
@@ -24,7 +25,7 @@ function getSourceUrls(text) {
   return sourcesLine
     .slice('sources:'.length)
     .split(';')
-    .map(source => source.slice(source.lastIndexOf('|') + 1).trim())
+    .map(source => resolveSourceUrl(source.slice(source.lastIndexOf('|') + 1).trim()))
     .filter(Boolean);
 }
 

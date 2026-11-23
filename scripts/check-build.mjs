@@ -4,7 +4,7 @@ import { execFile } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { promisify } from 'node:util';
 import { join } from 'node:path';
-import { describeSource, sourceKinds } from './source-provenance.mjs';
+import { describeSource, resolveSourceUrl, sourceKinds } from './source-provenance.mjs';
 
 const root = new URL('..', import.meta.url).pathname;
 const dist = join(root, 'dist');
@@ -217,6 +217,13 @@ if (updatesBuffer) {
       if (updates.some(update => update.sources.some(source => !sourceKinds.includes(source.kind)))) {
         fail('every generated source must have a known provenance label');
       }
+      const generatedSourceUrls = updates.flatMap(update => update.sources.map(source => source.url));
+      if (generatedSourceUrls.includes('https://api-docs.deepseek.com/news/news251017')) {
+        fail('generated sources must not retain the moved DeepSeek release URL');
+      }
+      if (!generatedSourceUrls.includes('https://api-docs.deepseek.com/news/news261017/')) {
+        fail('generated sources must resolve the moved DeepSeek release URL');
+      }
 
       if (indexBuffer) {
         const html = indexBuffer.toString('utf8');
@@ -331,6 +338,15 @@ try {
   }
   if (outputs[0].some((output, index) => output !== outputs[1][index])) {
     fail('LF and CRLF content must produce identical generated output');
+  }
+
+  if (resolveSourceUrl('https://api-docs.deepseek.com/news/news251017') !==
+      'https://api-docs.deepseek.com/news/news261017/') {
+    fail('known moved source URL must resolve to its verified replacement');
+  }
+  if (resolveSourceUrl('https://api-docs.deepseek.com.example.org/news/news251017') !==
+      'https://api-docs.deepseek.com.example.org/news/news251017') {
+    fail('moved source URL aliases must not rewrite lookalike hosts');
   }
 
   for (const [url, expectedKind] of [
